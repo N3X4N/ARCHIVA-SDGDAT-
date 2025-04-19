@@ -13,9 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id')->nullable()->after('id');
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
+        Schema::create('soportes', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre', 60)->unique();   // Papel, Microfilm, Digital …
+            $table->boolean('is_active')->default(true);
+            $table->timestampsTz();
+            $table->softDeletesTz();
         });
     }
 
@@ -26,9 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['role_id']);
-            $table->dropColumn('role_id');
-        });
+        Schema::dropIfExists('soportes');
     }
 };
