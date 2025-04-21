@@ -89,26 +89,36 @@
         <i class="fas fa-chevron-left"></i>
       </button>
       <div class="nav flex-column">
-        <a href="#" class="sidebar-link nav-link active text-decoration-none p-3">
+        <!-- Dashboard -->
+        <a href="{{ url('/home') }}" class="sidebar-link nav-link active text-decoration-none p-3">
           <i class="fas fa-home me-3"></i>
           <span class="hide-on-collapse">Dashboard</span>
         </a>
-        <a href="#" class="sidebar-link nav-link text-decoration-none p-3">
-          <i class="fas fa-chart-bar me-3"></i>
-          <span class="hide-on-collapse">Analytics</span>
+
+        <!-- Transferencias: solo admin y archivista -->
+        @if(auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
+          <a href="{{ route('inventarios.transferencias.index') }}"
+             class="sidebar-link nav-link p-3 {{ request()->is('inventarios/transferencias*') ? 'active' : '' }}">
+            <i class="fas fa-archive me-3"></i>
+            <span class="hide-on-collapse">Transferencias</span>
+          </a>
+        @endif
+
+        <!-- Préstamos: todos los roles -->
+        <a href="{{ route('prestamos.index') }}"
+           class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fas fa-book me-3"></i>
+          <span class="hide-on-collapse">Préstamos</span>
         </a>
-        <a href="#" class="sidebar-link nav-link text-decoration-none p-3">
-          <i class="fas fa-users me-3"></i>
-          <span class="hide-on-collapse">Customers</span>
-        </a>
-        <a href="#" class="sidebar-link nav-link text-decoration-none p-3">
-          <i class="fas fa-box me-3"></i>
-          <span class="hide-on-collapse">Products</span>
-        </a>
-        <a href="#" class="sidebar-link nav-link text-decoration-none p-3">
-          <i class="fas fa-gear me-3"></i>
-          <span class="hide-on-collapse">Settings</span>
-        </a>
+
+        <!-- Usuarios: solo admin -->
+        @if(auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
+          <a href="{{ route('admin.users.index') }}"
+             class="sidebar-link nav-link p-3 {{ request()->is('admin/users*') ? 'active' : '' }}">
+            <i class="fas fa-users me-3"></i>
+            <span class="hide-on-collapse">Usuarios</span>
+          </a>
+        @endif
       </div>
     </nav>
 
