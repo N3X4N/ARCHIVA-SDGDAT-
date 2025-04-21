@@ -46,7 +46,12 @@ return new class extends Migration
             $table->date('fecha_extrema_inicial')->nullable();
             $table->date('fecha_extrema_final')->nullable();
             $table->integer('numero_folios')->nullable();
-            $table->string('soporte', 50)->nullable();
+            $table->foreignId('soporte_id')
+                ->nullable()
+                ->constrained('soportes')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->string('frecuencia_consulta', 50)->nullable();
             $table->text('observaciones')->nullable();
             $table->string('estado_flujo', 30)->default('ingreso');
