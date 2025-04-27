@@ -13,4 +13,9 @@ class Ubicacion extends Model
     protected $table = 'ubicaciones';  // Asegúrate de que este sea el nombre correcto de la tabla
 
     protected $fillable = ['estante', 'bandeja', 'caja', 'carpeta', 'otro', 'is_active'];
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }
