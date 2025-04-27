@@ -1,108 +1,114 @@
-@php
-  $get = fn($campo) => old($campo, $transferencia->$campo ?? '');
-@endphp
+<!-- resources/views/inventarios/transferencias/_form.blade.php -->
 
-<div class="row g-3">
-  <div class="col-md-6">
-    <label class="form-label">Dependencia</label>
-    <select name="dependencia_id" class="form-select" required>
-      <option value="">Seleccione...</option>
-      @foreach($dependencias as $id => $nombre)
-        <option value="{{ $id }}" {{ $get('dependencia_id') == $id ? 'selected' : '' }}>
-          {{ $nombre }}
-        </option>
-      @endforeach
-    </select>
-    @error('dependencia_id') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+<div class="row">
+    <!-- Dependencia -->
+    <div class="col-md-4">
+        <label for="dependencia_id">Dependencia</label>
+        <select name="dependencia_id" class="form-control" required>
+            <option value="">Seleccione...</option>
+            @foreach ($dependencias as $id => $nombre)
+                <option value="{{ $id }}" {{ old('dependencia_id', $transferencia->dependencia_id ?? '') == $id ? 'selected' : '' }}>
+                    {{ $nombre }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Serie</label>
-    <select name="serie_documental_id" class="form-select" required>
-      <option value="">Seleccione...</option>
-      @foreach($series as $id => $nombre)
-        <option value="{{ $id }}" {{ $get('serie_documental_id') == $id ? 'selected' : '' }}>
-          {{ $nombre }}
-        </option>
-      @endforeach
-    </select>
-    @error('serie_documental_id') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+    <!-- Serie Documental -->
+    <div class="col-md-4">
+        <label for="serie_documental_id">Serie Documental</label>
+        <select name="serie_documental_id" class="form-control" required>
+            <option value="">Seleccione...</option>
+            @foreach ($series as $id => $nombre)
+                <option value="{{ $id }}" {{ old('serie_documental_id', $transferencia->serie_documental_id ?? '') == $id ? 'selected' : '' }}>
+                    {{ $nombre }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Subserie</label>
-    <select name="subserie_documental_id" class="form-select">
-      <option value="">Seleccione...</option>
-      @foreach($subseries as $id => $nombre)
-        <option value="{{ $id }}" {{ $get('subserie_documental_id') == $id ? 'selected' : '' }}>
-          {{ $nombre }}
-        </option>
-      @endforeach
-    </select>
-    @error('subserie_documental_id') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+    <!-- Subserie Documental -->
+    <div class="col-md-4">
+        <label for="subserie_documental_id">Subserie Documental</label>
+        <select name="subserie_documental_id" class="form-control">
+            <option value="">Seleccione...</option>
+            @foreach ($subseries as $id => $nombre)
+                <option value="{{ $id }}" {{ old('subserie_documental_id', $transferencia->subserie_documental_id ?? '') == $id ? 'selected' : '' }}>
+                    {{ $nombre }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+</div>
 
-  <div class="col-md-6">
-    <label class="form-label">Ubicación</label>
-    <select name="ubicacion_id" class="form-select" required>
-      <option value="">Seleccione...</option>
-      @foreach($ubicaciones as $id => $nombre)
-        <option value="{{ $id }}" {{ $get('ubicacion_id') == $id ? 'selected' : '' }}>
-          {{ $nombre }}
-        </option>
-      @endforeach
-    </select>
-    @error('ubicacion_id') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+<div class="row">
+    <!-- Ubicación -->
+    <div class="col-md-4">
+        <label for="ubicacion_id">Ubicación</label>
+        <select name="ubicacion_id" class="form-control" required>
+            <option value="">Seleccione...</option>
+            @foreach ($ubicaciones as $id => $estante)
+                <option value="{{ $id }}" {{ old('ubicacion_id', $transferencia->ubicacion_id ?? '') == $id ? 'selected' : '' }}>
+                    {{ $estante }} - {{ optional($transferencia->ubicacion)->bandeja ?? '' }} - {{ optional($transferencia->ubicacion)->caja ?? '' }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Soporte</label>
-    <select name="soporte_id" class="form-select" required>
-      <option value="">Seleccione...</option>
-      @foreach($soportes as $id => $nombre)
-        <option value="{{ $id }}" {{ $get('soporte_id') == $id ? 'selected' : '' }}>
-          {{ $nombre }}
-        </option>
-      @endforeach
-    </select>
-    @error('soporte_id') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+    <!-- Código Interno -->
+    <div class="col-md-4">
+        <label for="codigo_interno">Código Interno</label>
+        <input type="text" name="codigo_interno" class="form-control" value="{{ old('codigo_interno', $transferencia->codigo_interno ?? '') }}" required>
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Código Interno</label>
-    <input type="text" name="codigo_interno" class="form-control" value="{{ $get('codigo_interno') }}" required>
-    @error('codigo_interno') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+    <!-- Soporte -->
+    <div class="col-md-4">
+        <label for="soporte_id">Soporte</label>
+        <select name="soporte_id" class="form-control" required>
+            <option value="">Seleccione...</option>
+            @foreach ($soportes as $id => $nombre)
+                <option value="{{ $id }}" {{ old('soporte_id', $transferencia->soporte_id ?? '') == $id ? 'selected' : '' }}>
+                    {{ $nombre }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+</div>
 
-  <div class="col-md-6">
-    <label class="form-label">Objeto</label>
-    <input type="text" name="objeto" class="form-control" value="{{ $get('objeto') }}">
-    @error('objeto') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+<div class="row">
+    <!-- Fecha Extrema Inicial -->
+    <div class="col-md-4">
+        <label for="fecha_extrema_inicial">Fecha Extrema Inicial</label>
+        <input type="date" name="fecha_extrema_inicial" class="form-control" value="{{ old('fecha_extrema_inicial', $transferencia->fecha_extrema_inicial ?? '') }}">
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Fecha Entrada</label>
-    <input type="date" name="registro_entrada" class="form-control" value="{{ $get('registro_entrada') }}">
-    @error('registro_entrada') <div class="text-danger">{{ $message }}</div> @enderror
-  </div>
+    <!-- Fecha Extrema Final -->
+    <div class="col-md-4">
+        <label for="fecha_extrema_final">Fecha Extrema Final</label>
+        <input type="date" name="fecha_extrema_final" class="form-control" value="{{ old('fecha_extrema_final', $transferencia->fecha_extrema_final ?? '') }}">
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Fecha Extrema Inicial</label>
-    <input type="date" name="fecha_extrema_inicial" class="form-control" value="{{ $get('fecha_extrema_inicial') }}">
-  </div>
+    <!-- Estado de Flujo -->
+    <div class="col-md-4">
+        <label for="estado_flujo">Estado de Flujo</label>
+        <select name="estado_flujo" class="form-control" required>
+            <option value="">Seleccione...</option>
+            <option value="disponible" {{ old('estado_flujo', $transferencia->estado_flujo ?? '') == 'disponible' ? 'selected' : '' }}>Disponible</option>
+            <option value="prestado" {{ old('estado_flujo', $transferencia->estado_flujo ?? '') == 'prestado' ? 'selected' : '' }}>Prestado</option>
+        </select>
+    </div>
+</div>
 
-  <div class="col-md-6">
-    <label class="form-label">Fecha Extrema Final</label>
-    <input type="date" name="fecha_extrema_final" class="form-control" value="{{ $get('fecha_extrema_final') }}">
-  </div>
+<div class="row">
+    <!-- Número de Folios -->
+    <div class="col-md-4">
+        <label for="numero_folios">Número de Folios</label>
+        <input type="number" name="numero_folios" class="form-control" value="{{ old('numero_folios', $transferencia->numero_folios ?? '') }}">
+    </div>
 
-  <div class="col-md-6">
-    <label class="form-label">Número Folios</label>
-    <input type="number" name="numero_folios" class="form-control" value="{{ $get('numero_folios') }}">
-  </div>
-
-  <div class="col-md-12">
-    <label class="form-label">Observaciones</label>
-    <textarea name="observaciones" class="form-control">{{ $get('observaciones') }}</textarea>
-  </div>
+    <!-- Observaciones -->
+    <div class="col-md-4">
+        <label for="observaciones">Observaciones</label>
+        <textarea name="observaciones" class="form-control">{{ old('observaciones', $transferencia->observaciones ?? '') }}</textarea>
+    </div>
 </div>
