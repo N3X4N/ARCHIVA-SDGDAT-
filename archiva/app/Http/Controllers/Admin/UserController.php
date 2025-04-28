@@ -11,12 +11,35 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     // Mostrar lista de usuarios
-    public function index()
-    {
-        // Con paginación y cargando el rol
-        $users = User::with('role')->paginate(15);
-        return view('users.index', compact('users'));
+    public function index(Request $request)
+{
+    $query = User::with('role');
+
+    // Filtro por nombre
+    if ($request->filled('name')) {
+        $query->where('name', 'like', '%' . $request->name . '%');
     }
+
+    // Filtro por email
+    if ($request->filled('email')) {
+        $query->where('email', 'like', '%' . $request->email . '%');
+    }
+
+    // Filtro por rol
+    if ($request->filled('role')) {      // role = slug (admin/user) o ID; ajusta
+        $query->whereHas('role', function ($q) use ($request) {
+            $q->where('nombre_rol', $request->role);
+        });
+    }
+
+    // Filtro por estado
+    if ($request->has('is_active') && $request->is_active !== '') {
+        $query->where('is_active', $request->is_active);
+    }
+
+    $users = $query->paginate(15)->appends($request->query());   // mantiene filtros en links
+    return view('users.index', compact('users'));
+}
 
     // Formulario para crear usuario
     public function create()

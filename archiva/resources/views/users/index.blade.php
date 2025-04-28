@@ -9,50 +9,74 @@
             Nuevo Usuario
         </a>
 
-         <!-- Formulario de filtros -->
-         <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4">
-            <div class="row">
-                <!-- Filtro por nombre -->
-                <div class="col-md-3">
-                    <label for="name">Nombre</label>
-                    <input type="text" name="name" id="name" class="form-control" placeholder="Buscar por nombre" value="{{ request()->get('name') }}">
-                </div>
+        <!-- Formulario de filtros -->
+<form method="GET" action="{{ route('admin.users.index') }}" class="mb-4">
+    <div class="row g-3">
 
-                <!-- Filtro por correo electrónico -->
-                <div class="col-md-3">
-                    <label for="email">Correo Electrónico</label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="Buscar por correo" value="{{ request()->get('email') }}">
-                </div>
+        {{-- Nombre --}}
+        <div class="col-md-3">
+            <label for="name" class="form-label">Nombre</label>
+            <input  type="text"
+                    name="name"
+                    id="name"
+                    class="form-control"
+                    value="{{ request('name') }}"
+                    placeholder="Buscar por nombre">
+        </div>
 
-                <!-- Filtro por rol -->
-                <div class="col-md-3">
-                    <label for="role">Rol</label>
-                    <select name="role" id="role" class="form-control">
-                        <option value="">Seleccionar Rol</option>
-                        <option value="admin" {{ request()->get('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="user" {{ request()->get('role') == 'user' ? 'selected' : '' }}>Usuario</option>
-                    </select>
-                </div>
+        {{-- Correo --}}
+        <div class="col-md-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input  type="email"
+                    name="email"
+                    id="email"
+                    class="form-control"
+                    value="{{ request('email') }}"
+                    placeholder="Buscar por correo">
+        </div>
 
-                <!-- Filtro por estado -->
-                <div class="col-md-2">
-                    <label for="is_active">Estado</label>
-                    <select name="is_active" id="is_active" class="form-control">
-                        <option value="">Todos</option>
-                        <option value="1" {{ request()->get('is_active') == '1' ? 'selected' : '' }}>Activo</option>
-                        <option value="0" {{ request()->get('is_active') == '0' ? 'selected' : '' }}>Inactivo</option>
-                    </select>
-                </div>
+        {{-- Rol --}}
+        <div class="col-md-2">
+            <label for="role" class="form-label">Rol</label>
+            <select name="role" id="role" class="form-select">
+                <option value="">Todos</option>
+                <option value="admin" {{ request('role')=='admin' ? 'selected' : '' }}>Admin</option>
+                <option value="user"  {{ request('role')=='user'  ? 'selected' : '' }}>Usuario</option>
+            </select>
+        </div>
 
-                <!-- Botón de filtro -->
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                </div>
+        {{-- Estado (Activo / Inactivo) --}}
+        <div class="col-md-2">
+            <label for="is_active" class="form-label">Estado</label>
+            <select name="is_active" id="is_active" class="form-select">
+                <option value="">Todos</option>
+                <option value="1" {{ request('is_active')==='1' ? 'selected' : '' }}>Activo</option>
+                <option value="0" {{ request('is_active')==='0' ? 'selected' : '' }}>Inactivo</option>
+            </select>
+        </div>
+
+        {{-- Botones --}}
+        <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary w-100">Limpiar</a>
+        </div>
+
+    </div>
+</form>
+
+        <!-- Info + paginación (arriba) -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                @if($users->total())
+                    <span>Mostrando {{ $users->firstItem() }}-{{ $users->lastItem() }} de {{ $users->total() }} resultados</span>
+                @endif
             </div>
-        </form>
+            <div>
+                {{ $users->withQueryString()->links('pagination::bootstrap-4') }}
+            </div>
+        </div>
 
-
-
+        <!-- Tabla -->
         <div class="table-responsive">
             <table class="table table-bordered w-100">
                 <thead>
@@ -61,58 +85,51 @@
                         <th>Email</th>
                         <th>Rol</th>
                         <th>Activo</th>
-                        <th>Acciones</th>
+                        <th style="width: 170px">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                @foreach ($users as $user)
+                @forelse ($users as $user)
                     <tr>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
+                        <td>{{ optional($user->role)->nombre_rol ?? '—' }}</td>
                         <td>
-                            {{ optional($user->role)->nombre_rol ?: '—' }}
+                            @if($user->is_active)
+                                <span class="badge bg-success">Activo</span>
+                            @else
+                                <span class="badge bg-secondary">Inactivo</span>
+                            @endif
                         </td>
                         <td class="d-flex gap-1">
-                            <!-- Botón Editar con ícono -->
-                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-primary" title="Editar">
-                                <i class="fa-solid fa-pen"></i> Editar
+                            <a href="{{ route('admin.users.edit', $user) }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="fa-solid fa-pen"></i>
+                                Editar
                             </a>
 
-                            <!-- Botón Borrar con ícono -->
-                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('¿Eliminar usuario?')">
+                            <form  action="{{ route('admin.users.destroy', $user) }}"
+                                   method="POST"
+                                   onsubmit="return confirm('¿Eliminar usuario?')">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-sm btn-danger" title="Borrar">
-                                    <i class="fa-solid fa-trash"></i> Borrar
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="fa-solid fa-trash"></i>
+                                    Borrar
                                 </button>
                             </form>
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center">No hay usuarios registrados.</td>
+                    </tr>
+                @endforelse
                 </tbody>
             </table>
         </div>
 
-        <!-- Paginación -->
-        {{ $users->links() }}
-        <!-- Paginación -->
-        <nav aria-label="Paginación de Transferencias">
-            <ul class="pagination justify-content-end">
-                <li class="page-item disabled">
-                    <span class="page-link">Anterior</span>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item active">
-                    <span class="page-link">
-                        2
-                        <span class="sr-only">(actual)</span>
-                    </span>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Siguiente</a>
-                </li>
-            </ul>
-        </nav>
+        <!-- Paginación (abajo) -->
+        {{ $users->withQueryString()->links('pagination::bootstrap-4') }}
     </div>
 </x-admin-layout>
