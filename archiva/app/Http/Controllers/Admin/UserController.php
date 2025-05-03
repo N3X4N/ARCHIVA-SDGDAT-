@@ -12,34 +12,34 @@ class UserController extends Controller
 {
     // Mostrar lista de usuarios
     public function index(Request $request)
-{
-    $query = User::with('role');
+    {
+        // Obtener solo los nombres de los roles
+        $roles = Role::pluck('nombre_rol', 'id');  // Solo obtener el nombre del rol y el ID
 
-    // Filtro por nombre
-    if ($request->filled('name')) {
-        $query->where('name', 'like', '%' . $request->name . '%');
+        // Filtrar usuarios según los parámetros
+        $query = User::query();
+
+        if ($request->has('role_id') && $request->role_id !== '') {
+            $query->where('role_id', $request->role_id); // Filtro por rol
+        }
+
+        if ($request->has('is_active') && $request->is_active !== '') {
+            $query->where('is_active', (bool) $request->is_active); // Filtro por estado
+        }
+
+        if ($request->has('name') && $request->name !== '') {
+            $query->where('name', 'like', '%' . $request->name . '%');  // Filtro por nombre
+        }
+
+        if ($request->has('email') && $request->email !== '') {
+            $query->where('email', 'like', '%' . $request->email . '%'); // Filtro por correo electrónico
+        }
+
+        $users = $query->paginate(50);
+
+        return view('users.index', compact('users', 'roles'));
     }
 
-    // Filtro por email
-    if ($request->filled('email')) {
-        $query->where('email', 'like', '%' . $request->email . '%');
-    }
-
-    // Filtro por rol
-    if ($request->filled('role')) {      // role = slug (admin/user) o ID; ajusta
-        $query->whereHas('role', function ($q) use ($request) {
-            $q->where('nombre_rol', $request->role);
-        });
-    }
-
-    // Filtro por estado
-    if ($request->has('is_active') && $request->is_active !== '') {
-        $query->where('is_active', $request->is_active);
-    }
-
-    $users = $query->paginate(15)->appends($request->query());   // mantiene filtros en links
-    return view('users.index', compact('users'));
-}
 
     // Formulario para crear usuario
     public function create()
@@ -62,18 +62,12 @@ class UserController extends Controller
         ]);
 
         $data['password']  = Hash::make($data['password']);
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->has('is_active') ? true : false;
 
         User::create($data);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Usuario creado correctamente.');
-    }
-
-    // Mostrar datos de un usuario
-    public function show(User $user)
-    {
-        return view('users.show', compact('user'));
     }
 
     // Formulario para editar usuario
@@ -103,7 +97,7 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->has('is_active') ? true : false;
 
         $user->update($data);
 

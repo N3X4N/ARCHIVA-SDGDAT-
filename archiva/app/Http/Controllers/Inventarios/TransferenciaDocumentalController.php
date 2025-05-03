@@ -68,7 +68,7 @@ class TransferenciaDocumentalController extends Controller
         }
 
         // Paginación
-        $transferencias = $query->paginate(5);
+        $transferencias = $query->paginate(50);
 
         // Obtener listas para los filtros
         $dependencias = Dependencia::active()->pluck('nombre', 'id');

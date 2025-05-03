@@ -57,8 +57,10 @@
                 Filtros</a>
         </form>
 
-           <!-- Paginación -->
-           <div class="d-flex justify-content-between align-items-center">
+        <br>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-between align-items-center">
             <div>
                 <span>Mostrando {{ $transferencias->firstItem() }} a {{ $transferencias->lastItem() }} de
                     {{ $transferencias->total() }} resultados</span>
@@ -69,73 +71,72 @@
         </div>
     </div>
 
-        <!-- Asegurarse de que la tabla sea responsiva y ocupe todo el espacio disponible -->
-        <div class="table-responsive">
-            <table class="table table-striped w-100"> <!-- La clase w-100 garantiza que la tabla ocupe todo el ancho -->
-                <thead>
+    <!-- Asegurarse de que la tabla sea responsiva y ocupe todo el espacio disponible -->
+    <div class="table-responsive">
+        <table class="table table-striped w-100"> <!-- La clase w-100 garantiza que la tabla ocupe todo el ancho -->
+            <thead>
+                <tr>
+                    <th>Código Interno</th>
+                    <th>Dependencia</th>
+                    <th>Serie</th>
+                    <th>Subserie</th>
+                    <th>Ubicación</th>
+                    <th>Soporte</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($transferencias as $t)
                     <tr>
-                        <th>Código Interno</th>
-                        <th>Dependencia</th>
-                        <th>Serie</th>
-                        <th>Subserie</th>
-                        <th>Ubicación</th>
-                        <th>Soporte</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+                        <td>{{ $t->codigo_interno }}</td>
+                        <td>{{ optional($t->dependencia)->nombre }}</td>
+                        <td>{{ optional($t->serieDocumental)->nombre }}</td>
+                        <td>{{ optional($t->subserieDocumental)->nombre }}</td>
+                        <td>
+                            {{ optional($t->ubicacion)->estante .
+                                ' - ' .
+                                optional($t->ubicacion)->bandeja .
+                                ' - ' .
+                                optional($t->ubicacion)->caja .
+                                ' - ' .
+                                optional($t->ubicacion)->carpeta .
+                                ' - ' .
+                                optional($t->ubicacion)->otro }}
+                        </td>
+                        <td>{{ optional($t->soporte)->nombre }}</td>
+                        <td>
+                            <!-- Estado con badge y color basado en el valor de estado_flujo -->
+                            <span class="badge {{ $t->estado_flujo == 'disponible' ? 'bg-success' : 'bg-warning' }}">
+                                {{ ucfirst($t->estado_flujo) }}
+                            </span>
+                        </td>
+
+                        <td class="d-flex gap-1">
+                            <!-- Botón de editar con ícono -->
+                            <a href="{{ route('inventarios.transferencias.edit', $t) }}" class="btn btn-sm btn-primary"
+                                title="Editar">
+                                <i class="fa-solid fa-pen"></i> Editar
+                            </a>
+
+                            <!-- Formulario para borrar con confirmación -->
+                            <form action="{{ route('inventarios.transferencias.destroy', $t) }}" method="POST"
+                                onsubmit="return confirm('¿Eliminar esta transferencia?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-danger" title="Borrar">
+                                    <i class="fa-solid fa-trash"></i> Borrar
+                                </button>
+                            </form>
+                        </td>
+
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse($transferencias as $t)
-                        <tr>
-                            <td>{{ $t->codigo_interno }}</td>
-                            <td>{{ optional($t->dependencia)->nombre }}</td>
-                            <td>{{ optional($t->serieDocumental)->nombre }}</td>
-                            <td>{{ optional($t->subserieDocumental)->nombre }}</td>
-                            <td>
-                                {{ optional($t->ubicacion)->estante .
-                                    ' - ' .
-                                    optional($t->ubicacion)->bandeja .
-                                    ' - ' .
-                                    optional($t->ubicacion)->caja .
-                                    ' - ' .
-                                    optional($t->ubicacion)->carpeta .
-                                    ' - ' .
-                                    optional($t->ubicacion)->otro }}
-                            </td>
-                            <td>{{ optional($t->soporte)->nombre }}</td>
-                            <td>
-                                <!-- Estado con badge y color basado en el valor de estado_flujo -->
-                                <span
-                                    class="badge {{ $t->estado_flujo == 'disponible' ? 'bg-success' : 'bg-warning' }}">
-                                    {{ ucfirst($t->estado_flujo) }}
-                                </span>
-                            </td>
-
-                            <td class="d-flex gap-1">
-                                <!-- Botón de editar con ícono -->
-                                <a href="{{ route('inventarios.transferencias.edit', $t) }}"
-                                    class="btn btn-sm btn-primary" title="Editar">
-                                    <i class="fa-solid fa-pen"></i> Editar
-                                </a>
-
-                                <!-- Formulario para borrar con confirmación -->
-                                <form action="{{ route('inventarios.transferencias.destroy', $t) }}" method="POST"
-                                    onsubmit="return confirm('¿Eliminar esta transferencia?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" title="Borrar">
-                                        <i class="fa-solid fa-trash"></i> Borrar
-                                    </button>
-                                </form>
-                            </td>
-
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9">No hay transferencias registradas.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                @empty
+                    <tr>
+                        <td colspan="9">No hay transferencias registradas.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </x-admin-layout>

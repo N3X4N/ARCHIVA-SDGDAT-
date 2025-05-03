@@ -1,14 +1,4 @@
 <!-- resources/views/admin/users/_form.blade.php -->
-@php
-    /**
-     * Devuelve el valor para el campo:
-     * 1. Si la validación falló => old()
-     * 2. Si estamos en edición    => $user->campo
-     * 3. Si estamos creando       => null (campo vacío)
-     */
-    $get = fn(string $field) =>
-        old($field, ($user->exists ?? false) ? $user->$field : null);
-@endphp
 
 {{-- Nombre --}}
 <div class="mb-3">
