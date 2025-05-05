@@ -34,6 +34,7 @@ class DetallesTransferenciaDocumental extends Model
         'ubicacion_bandeja',
         'ubicacion_estante',
         'observaciones',
+        'estado_flujo',
     ];
 
     // Define the relationship with TransferenciaDocumental

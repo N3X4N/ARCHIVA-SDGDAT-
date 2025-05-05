@@ -77,6 +77,7 @@
                     <th>Oficina Productora</th>
                     <th>Registro de Entrada</th>
                     <th>Objeto</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -90,6 +91,7 @@
                         <td>{{ $t->oficina_productora }}</td>
                         <td>{{ \Carbon\Carbon::parse($t->registro_entrada)->format('Y-m-d') }}</td>
                         <td>{{ $t->objeto }}</td>
+                        <td>{{ $t->estado_flujo }}</td>
                         <td>
                             <!-- Buttons with icons properly aligned -->
                             <div class="d-flex">
@@ -130,6 +132,7 @@
                                                 <th>Frecuencia de Consulta</th>
                                                 <th>Ubicación</th>
                                                 <th>Observaciones</th>
+                                                <th>Estado</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -150,6 +153,7 @@
                             <td>{{ $detalle->ubicacion_caja . ' - ' . $detalle->ubicacion_bandeja . ' - ' . $detalle->ubicacion_estante }}
                             </td>
                             <td>{{ $detalle->observaciones }}</td>
+                            <td>{{ $detalle->estado_flujo }}</td>
                         </tr>
                         @if ($index === count($t->detalles) - 1)
             </tbody>

@@ -99,63 +99,42 @@ class TransferenciaDocumentalController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'dependencia_id' => 'required|exists:dependencias,id',
-            'serie_documental_id' => 'required|exists:series_documentales,id',
-            'subserie_documental_id' => 'nullable|exists:subseries_documentales,id',
-            'ubicacion_id' => 'required|exists:ubicaciones,id', // Asegurarte que la ubicación sea válida
-            'soporte_id' => 'required|exists:soportes,id', // Asegurarte que el soporte sea válido
-            'codigo_interno' => 'required|string|max:50|unique:transferencias_documentales',
-            'registro_entrada' => 'nullable|date',
-            'estado_flujo' => 'required|in:disponible,prestado',
-            'observaciones' => 'nullable|string',
+        $request->validate([
+            'dependencia_id' => 'required',
+            'entidad_productora' => 'required',
+            'unidad_administrativa' => 'required',
+            'oficina_productora' => 'required',
+            'numero_transferencia' => 'required',
+            'objeto' => 'required',
         ]);
 
-        TransferenciaDocumental::create($data);
+        TransferenciaDocumental::create($request->all());
 
-        return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia creada correctamente');
+        return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia Documental creada con éxito');
     }
 
-    public function edit(TransferenciaDocumental $transferenciaDocumental)
-    {
-        // Cargar la relación 'ubicacion' y pasarla a la vista
-        $transferenciaDocumental->load('ubicacion');
-
-        return view('inventarios.transferencias.edit', [
-            'transferencia' => $transferenciaDocumental,
-            'dependencias'  => Dependencia::active()->pluck('nombre', 'id'),
-            'series'        => SerieDocumental::active()->pluck('nombre', 'id'),
-            'subseries'     => SubserieDocumental::active()->pluck('nombre', 'id'),
-            'soportes'      => Soporte::active()->pluck('nombre', 'id'),
-            'ubicacion'     => $transferenciaDocumental->ubicacion, // Pasar la ubicacion
-        ]);
-    }
-
+    // Update an existing Transferencia Documental
     public function update(Request $request, TransferenciaDocumental $transferencia)
     {
-        $data = $request->validate([
-            'dependencia_id' => 'required|exists:dependencias,id',
-            'serie_documental_id' => 'required|exists:series_documentales,id',
-            'subserie_documental_id' => 'nullable|exists:subseries_documentales,id',
-            'ubicacion_id' => 'required|exists:ubicaciones,id',
-            'soporte_id' => 'required|exists:soportes,id',
-            'registro_entrada' => 'nullable|date',
-            'codigo_interno' => 'required|string|max:50|unique:transferencias_documentales,codigo_interno,' . $transferencia->id,
-            'estado_flujo' => 'required|in:disponible,prestado',
-            'observaciones' => 'nullable|string',
+        $request->validate([
+            'dependencia_id' => 'required',
+            'entidad_productora' => 'required',
+            'unidad_administrativa' => 'required',
+            'oficina_productora' => 'required',
+            'numero_transferencia' => 'required',
+            'objeto' => 'required',
         ]);
 
-        $transferencia->update($data);
+        $transferencia->update($request->all());
 
-        return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia actualizada correctamente');
+        return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia Documental actualizada con éxito');
     }
 
-    public function destroy(TransferenciaDocumental $transferenciaDocumental)
+    // Delete Transferencia Documental
+    public function destroy(TransferenciaDocumental $transferencia)
     {
-        $transferenciaDocumental->delete();
+        $transferencia->delete();
 
-        return redirect()
-            ->route('inventarios.transferencias.index')
-            ->with('success', 'Transferencia eliminada correctamente.');
+        return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia Documental eliminada con éxito');
     }
 }

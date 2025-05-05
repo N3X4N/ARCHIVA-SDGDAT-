@@ -21,8 +21,14 @@
 
                 <div class="col-12 col-md-4">
                     <label for="serie_documental_id"><strong>Entidad Productora</strong></label>
-                    <input type="text" name="serie_documental_id" class="form-control"
-                        value="{{ old('serie_documental_id', 'SECRETARIA DE PLANEACION') }}" required />
+                    <select name="dependencia_id" class="form-control" required>
+                        <option value="">Seleccione...</option>
+                        @foreach ($dependencias as $id => $nombre)
+                            <option value="{{ $id }}" {{ old('dependencia_id') == $id ? 'selected' : '' }}>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="col-12 col-md-4">
@@ -33,8 +39,14 @@
 
                 <div class="col-12 col-md-4">
                     <label for="entregado_por"><strong>Oficina Productora</strong></label>
-                    <input type="text" name="entregado_por" class="form-control"
-                        value="{{ old('entregado_por', 'SECRETARIA DE PLANEACION') }}" required />
+                    <select name="dependencia_id" class="form-control" required>
+                        <option value="">Seleccione...</option>
+                        @foreach ($dependencias as $id => $nombre)
+                            <option value="{{ $id }}" {{ old('dependencia_id') == $id ? 'selected' : '' }}>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
@@ -48,19 +60,19 @@
             <!-- Fila con los campos de fecha (Año, Mes, Día) con fecha del día de creación -->
             <div class="row mb-4">
                 <div class="col-12 col-md-4">
-                    <label for="fecha_extrema_inicial"><strong>AÑO</strong></label>
+                    <label><strong>AÑO</strong></label>
                     <input type="text" name="fecha_extrema_inicial" class="form-control"
-                        value="{{ old('fecha_extrema_inicial', now()->format('Y')) }}" required />
+                        value="{{ old('fecha_extrema_inicial', now()->format('Y')) }}" readonly>
                 </div>
                 <div class="col-12 col-md-4">
-                    <label for="fecha_extrema_final"><strong>MES</strong></label>
+                    <label><strong>MES</strong></label>
                     <input type="text" name="fecha_extrema_final" class="form-control"
-                        value="{{ old('fecha_extrema_final', now()->format('m')) }}" required />
+                        value="{{ old('fecha_extrema_final', now()->format('m')) }}" readonly>
                 </div>
                 <div class="col-12 col-md-4">
-                    <label for="numero_transferencia"><strong>DÍA</strong></label>
-                    <input type="text" name="numero_transferencia" class="form-control"
-                        value="{{ old('numero_transferencia', now()->format('d')) }}" required />
+                    <label><strong>DÍA</strong></label>
+                    <input type="text" name="dia_creacion" class="form-control"
+                        value="{{ old('dia_creacion', now()->format('d')) }}" readonly>
                 </div>
             </div>
 
@@ -90,103 +102,121 @@
 </div>
 
 <script>
-    // Función para agregar una nueva fila al formulario
-    function addRow() {
+    /* ========== Añadir fila ========== */
+    function addRow () {
         const container = document.getElementById('rows-container');
-        const rowHTML = `
-            <div class="row mb-4">
-                <!-- Número de Orden -->
-                <div class="col-12 col-md-2">
-                    <label>Número de Orden</label>
-                    <input type="text" name="numero_orden[]" class="form-control">
+
+        container.insertAdjacentHTML('beforeend', `
+            <div class="row g-3 align-items-end mb-4 inventario-row">
+                <div class="col-6 col-md-2">
+                    <label class="form-label">N° Orden</label>
+                    <input type="text" name="numero_orden[]" class="form-control numero-orden" readonly>
                 </div>
-                <!-- Código -->
-                <div class="col-12 col-md-2">
-                    <label>Código</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Código</label>
                     <input type="text" name="codigo[]" class="form-control">
                 </div>
-                <!-- Nombre de las Series/Subserie -->
+
                 <div class="col-12 col-md-4">
-                    <label>Nombre de las Series/Subserie o asuntos</label>
+                    <label class="form-label">Serie / Subserie</label>
                     <input type="text" name="nombre_series_subserie[]" class="form-control">
                 </div>
-                <!-- Fecha Inicial -->
-                <div class="col-12 col-md-2">
-                    <label>Fecha Inicial</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Fecha Inicial</label>
                     <input type="date" name="fecha_inicial[]" class="form-control">
                 </div>
-                <!-- Fecha Final -->
-                <div class="col-12 col-md-2">
-                    <label>Fecha Final</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Fecha Final</label>
                     <input type="date" name="fecha_final[]" class="form-control">
                 </div>
-                <!-- Caja -->
-                <div class="col-12 col-md-2">
-                    <label>Caja</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Caja</label>
                     <input type="number" name="caja[]" class="form-control">
                 </div>
-                <!-- Carpeta -->
-                <div class="col-12 col-md-2">
-                    <label>Carpeta</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Carpeta</label>
                     <input type="number" name="carpeta[]" class="form-control">
                 </div>
-                <!-- Resolución -->
-                <div class="col-12 col-md-2">
-                    <label>Resolución</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Resolución</label>
                     <input type="number" name="resolucion[]" class="form-control">
                 </div>
-                <!-- Otro -->
-                <div class="col-12 col-md-2">
-                    <label>Otro</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Tomo</label>
+                    <input type="number" name="tomo[]" class="form-control">
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Otro</label>
                     <input type="number" name="otro[]" class="form-control">
                 </div>
-                <!-- Número de Folios -->
-                <div class="col-12 col-md-2">
-                    <label>Número de Folios</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Folios</label>
                     <input type="number" name="numero_folios[]" class="form-control">
                 </div>
-                <!-- Soporte -->
-                <div class="col-12 col-md-2">
-                    <label>Soporte</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Soporte</label>
                     <input type="text" name="soporte[]" class="form-control">
                 </div>
-                <!-- Frecuencia de Consulta -->
-                <div class="col-12 col-md-2">
-                    <label>Frecuencia de Consulta</label>
-                    <input type="text" name="frecuencia_consulta[]" class="form-control">
-                </div>
-                <!-- Ubicación Caja -->
-                <div class="col-12 col-md-2">
-                    <label>Ubicación Caja</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Ubicación Caja</label>
                     <input type="text" name="ubicacion_caja[]" class="form-control">
                 </div>
-                <!-- Ubicación Bandeja -->
-                <div class="col-12 col-md-2">
-                    <label>Ubicación Bandeja</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Ubic. Bandeja</label>
                     <input type="text" name="ubicacion_bandeja[]" class="form-control">
                 </div>
-                <!-- Ubicación Estante -->
-                <div class="col-12 col-md-2">
-                    <label>Ubicación Estante</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Ubic. Estante</label>
                     <input type="text" name="ubicacion_estante[]" class="form-control">
                 </div>
-                <!-- Observaciones -->
-                <div class="col-12 col-md-2">
-                    <label>Observaciones</label>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Observaciones</label>
                     <input type="text" name="observaciones[]" class="form-control">
                 </div>
-                <!-- Botón Eliminar -->
-                <div class="col-12 col-md-1">
-                    <button type="button" class="btn btn-danger" onclick="removeRow(this)">Eliminar</button>
+
+                <div class="col-auto ms-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
                 </div>
             </div>
             <hr>
-        `;
-        container.insertAdjacentHTML('beforeend', rowHTML);
+        `);
+
+        actualizarOrdenes();         // numera después de añadir
     }
 
-    // Función para eliminar una fila
-    function removeRow(button) {
-        button.parentElement.parentElement.remove();
+    /* ========== Quitar fila ========== */
+    function removeRow (btn) {
+        const fila = btn.closest('.inventario-row');  // fila a eliminar
+        const hr   = fila.nextElementSibling;         // línea divisora
+
+        fila.remove();
+        if (hr && hr.tagName === 'HR') hr.remove();
+
+        actualizarOrdenes();         // re‑numera después de borrar
     }
-</script>
+
+    /* ========== Recalcular N° Orden ========== */
+    function actualizarOrdenes () {
+        document
+            .querySelectorAll('#rows-container .inventario-row')
+            .forEach((row, idx) => {
+                row.querySelector('.numero-orden').value = idx + 1;
+            });
+    }
+    </script>

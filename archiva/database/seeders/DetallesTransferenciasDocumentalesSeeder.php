@@ -21,7 +21,7 @@ class DetallesTransferenciasDocumentalesSeeder extends Seeder
         // Detalles para las transferencias existentes
         $detalles = [
             [
-                'transferencia_id' => 4, // Cambiado a 4 para coincidir con los IDs existentes
+                'transferencia_id' => 1, // Cambiado a 4 para coincidir con los IDs existentes
                 'ubicacion_id' => 1, // Asegúrate de que este ID existe en ubicaciones
                 'numero_orden' => '001',
                 'codigo' => '124.74.87',
@@ -40,9 +40,10 @@ class DetallesTransferenciasDocumentalesSeeder extends Seeder
                 'ubicacion_bandeja' => 'Bandeja A',
                 'ubicacion_estante' => 'Estante B',
                 'observaciones' => '2 Planos',
+                'estado_flujo' => 'Activo',
             ],
             [
-                'transferencia_id' => 7, // Cambiado a 5
+                'transferencia_id' => 2, // Cambiado a 5
                 'ubicacion_id' => 1,
                 'numero_orden' => '002',
                 'codigo' => '116.74.87',
@@ -61,9 +62,10 @@ class DetallesTransferenciasDocumentalesSeeder extends Seeder
                 'ubicacion_bandeja' => 'Bandeja B',
                 'ubicacion_estante' => 'Estante C',
                 'observaciones' => '3 Planos',
+                'estado_flujo' => 'Activo',
             ],
             [
-                'transferencia_id' => 6, // Cambiado a 6
+                'transferencia_id' => 3, // Cambiado a 6
                 'ubicacion_id' => 1,
                 'numero_orden' => '003',
                 'codigo' => '117.74.87',
@@ -82,6 +84,7 @@ class DetallesTransferenciasDocumentalesSeeder extends Seeder
                 'ubicacion_bandeja' => 'Bandeja C',
                 'ubicacion_estante' => 'Estante D',
                 'observaciones' => '4 Planos',
+                'estado_flujo' => 'prestado',
             ],
             // Agregar más detalles según sea necesario
         ];
