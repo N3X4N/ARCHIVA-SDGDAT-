@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
+     /**
      * Run the migrations.
      *
      * @return void
@@ -23,42 +23,20 @@ return new class extends Migration
                 ->constrained('dependencias')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('serie_documental_id')
-                ->constrained('series_documentales')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-            $table->foreignId('subserie_documental_id')
-                ->constrained('subseries_documentales')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
             $table->foreignId('ubicacion_id')
                 ->constrained('ubicaciones')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
-            // Metadatos de la transferencia
-            $table->string('oficina_productora', 150)->nullable();
-            $table->date('registro_entrada')->nullable();
-            $table->string('numero_transferencia', 30)->nullable();
-            $table->text('objeto')->nullable();
-            $table->string('numero_orden', 30)->nullable();
-            $table->string('codigo_interno', 30)->nullable();
-            $table->date('fecha_extrema_inicial')->nullable();
-            $table->date('fecha_extrema_final')->nullable();
-            $table->integer('numero_folios')->nullable();
-            $table->foreignId('soporte_id')
-                ->nullable()
-                ->constrained('soportes')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
-
-            $table->string('frecuencia_consulta', 50)->nullable();
-            $table->text('observaciones')->nullable();
-            $table->string('estado_flujo', 30)->default('ingreso');
-
-            $table->boolean('is_active')->default(true);
-            $table->timestampsTz();
-            $table->softDeletesTz();
+            $table->string('entidad_productora')->nullable();  // Nombre de la entidad productora
+            $table->string('unidad_administrativa')->nullable();  // Nombre de la unidad administrativa
+            $table->string('oficina_productora')->nullable();  // Nombre de la oficina productora
+            $table->date('registro_entrada')->nullable();  // Fecha de registro de entrada
+            $table->string('numero_transferencia', 30)->nullable();  // Número de transferencia
+            $table->text('objeto')->nullable();  // Descripción o objeto de la transferencia
+            $table->string('estado_flujo', 30)->default('ingreso');  // Estado de flujo, por defecto 'ingreso'
+            $table->boolean('is_active')->default(true);  // Estado activo
+            $table->timestamps();  // Timestamps (created_at, updated_at)
+            $table->softDeletes();  // Soporte para eliminación suave (soft deletes)
         });
     }
 

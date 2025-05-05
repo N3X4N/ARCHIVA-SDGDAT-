@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+{
+    Schema::create('detalles_transferencias_documentales', function (Blueprint $table) {
+        $table->id();  // ID único para cada detalle
+        $table->foreignId('transferencia_id')  // Relación con la transferencia principal
+              ->constrained('transferencias_documentales')
+              ->cascadeOnUpdate()
+              ->restrictOnDelete();
+        $table->foreignId('ubicacion_id')  // Relaciona con la tabla 'ubicaciones'
+              ->nullable()
+              ->constrained('ubicaciones')
+              ->cascadeOnUpdate()
+              ->restrictOnDelete();
+        // Otros campos
+        $table->string('numero_orden', 30)->nullable();  // Número de orden del documento
+        $table->string('codigo', 30)->nullable();  // Código del documento
+        $table->string('nombre_series_subserie', 150)->nullable();  // Nombre de la serie/subserie
+        $table->date('fecha_inicial')->nullable();  // Fecha inicial
+        $table->date('fecha_final')->nullable();  // Fecha final
+        $table->integer('caja')->nullable();  // Número de caja
+        $table->integer('carpeta')->nullable();  // Número de carpeta
+        $table->integer('resolucion')->nullable();  // Número de resolución
+        $table->integer('tomo')->nullable();  // Número de tomo
+        $table->integer('otro')->nullable();  // Otro campo adicional
+        $table->integer('numero_folios')->nullable();  // Número de folios
+        $table->string('soporte')->nullable();  // Tipo de soporte (papel, digital, etc.)
+        $table->string('frecuencia_consulta')->nullable();  // Frecuencia de consulta
+        $table->string('ubicacion_caja')->nullable();  // Ubicación de la caja
+        $table->string('ubicacion_bandeja')->nullable();  // Ubicación de la bandeja
+        $table->string('ubicacion_estante')->nullable();  // Ubicación del estante
+        $table->text('observaciones')->nullable();  // Observaciones adicionales
+        $table->timestamps();  // Timestamps (created_at, updated_at)
+        $table->softDeletes();
+    });
+}
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('detalles_transferencias_documentales');
+    }
+};
