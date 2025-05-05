@@ -11,6 +11,7 @@ use App\Models\SerieDocumental;
 use App\Models\SubserieDocumental;
 use App\Models\Ubicacion;
 use App\Models\Soporte;
+use App\Models\DetallesTransferenciaDocumental;
 
 class TransferenciaDocumental extends Model
 {
@@ -20,6 +21,7 @@ class TransferenciaDocumental extends Model
     protected $table = 'transferencias_documentales';
 
     protected $fillable = [
+        'id',
         'user_id',
         'dependencia_id',
         'serie_documental_id',
@@ -52,9 +54,9 @@ class TransferenciaDocumental extends Model
     }
 
     public function serieDocumental()
-{
-    return $this->belongsTo(SerieDocumental::class, 'serie_documental_id');
-}
+    {
+        return $this->belongsTo(SerieDocumental::class, 'serie_documental_id');
+    }
 
     public function subserieDocumental()
     {
@@ -91,6 +93,8 @@ class TransferenciaDocumental extends Model
                 ->orWhere('codigo_interno', 'like', "%$search%");
         });
     }
-
+    public function detalles()
+    {
+        return $this->hasMany(DetallesTransferenciaDocumental::class, 'transferencia_id');
+    }
 }
-

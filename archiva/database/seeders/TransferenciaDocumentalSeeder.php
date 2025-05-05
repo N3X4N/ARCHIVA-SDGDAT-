@@ -11,6 +11,7 @@ use App\Models\Ubicacion;
 use App\Models\Soporte;
 use App\Models\User;
 use Faker\Factory as Faker;
+use Carbon\Carbon;
 
 class TransferenciaDocumentalSeeder extends Seeder
 {
@@ -21,39 +22,51 @@ class TransferenciaDocumentalSeeder extends Seeder
      */
     public function run()
     {
-        $faker = Faker::create();  // Instancia de Faker para generar datos aleatorios
+        // Create 3 sample TransferenciaDocumental
+        $transferencias = [
+            [
+                'user_id' => 1, // Example user ID
+                'dependencia_id' => 1, // Example dependencia ID
+                'ubicacion_id' => 1, // Example ubicacion ID
+                'entidad_productora' => 'SECRETARIA DE PLANEACION',
+                'unidad_administrativa' => 'ALCALDIA MUNICIPAL DE TABIO',
+                'oficina_productora' => 'SECRETARIA DE PLANEACION',
+                'registro_entrada' => Carbon::now()->format('Y-m-d'),
+                'numero_transferencia' => '1',
+                'objeto' => 'ORGANIZACIÓN INVENTARIO DOCUMENTAL DE LA VIGENCIA 2021',
+                'estado_flujo' => 'ingreso',
+                'is_active' => true,
+            ],
+            [
+                'user_id' => 2, // Example user ID
+                'dependencia_id' => 1, // Example dependencia ID
+                'ubicacion_id' => 1, // Example ubicacion ID
+                'entidad_productora' => 'SECRETARIA DE EDUCACION',
+                'unidad_administrativa' => 'ALCALDIA DE BOGOTA',
+                'oficina_productora' => 'SECRETARIA DE EDUCACION',
+                'registro_entrada' => Carbon::now()->format('Y-m-d'),
+                'numero_transferencia' => '2',
+                'objeto' => 'ACTUALIZACION DE INVENTARIO 2022',
+                'estado_flujo' => 'prestado',
+                'is_active' => true,
+            ],
+            [
+                'user_id' => 1, // Example user ID
+                'dependencia_id' => 1, // Example dependencia ID
+                'ubicacion_id' => 1, // Example ubicacion ID
+                'entidad_productora' => 'SECRETARIA DE SALUD',
+                'unidad_administrativa' => 'MUNICIPIO DE MEDELLIN',
+                'oficina_productora' => 'SECRETARIA DE SALUD',
+                'registro_entrada' => Carbon::now()->format('Y-m-d'),
+                'numero_transferencia' => '3',
+                'objeto' => 'INVENTARIO HISTORICO DE LA VIGENCIA 2023',
+                'estado_flujo' => 'ingreso',
+                'is_active' => true,
+            ]
+        ];
 
-        // Obtener algunos usuarios y dependencias para asociarlos
-        $users = User::all();
-        $dependencias = Dependencia::all();
-        $series = SerieDocumental::all();
-        $subseries = SubserieDocumental::all();
-        $ubicaciones = Ubicacion::all();
-        $soportes = Soporte::all();
-
-        // Crear registros en la tabla 'transferencias_documentales'
-        foreach (range(1, 10) as $index) {  // Cambia 10 por la cantidad de registros que deseas insertar
-            TransferenciaDocumental::create([
-                'user_id'               => $users->random()->id,
-                'dependencia_id'        => $dependencias->random()->id,
-                'serie_documental_id'   => $series->random()->id,
-                'subserie_documental_id'=> $subseries->random()->id,
-                'ubicacion_id'          => $ubicaciones->random()->id,
-                'soporte_id'            => $soportes->random()->id,
-                'oficina_productora'    => $faker->company,
-                'registro_entrada'      => $faker->date(),
-                'numero_transferencia'  => $faker->word,
-                'objeto'                => $faker->sentence,
-                'numero_orden'          => $faker->word,
-                'codigo_interno'        => $faker->unique()->word,
-                'fecha_extrema_inicial' => $faker->date(),
-                'fecha_extrema_final'   => $faker->date(),
-                'numero_folios'         => $faker->numberBetween(1, 100),
-                'frecuencia_consulta'   => $faker->word,
-                'observaciones'         => $faker->text,
-                'estado_flujo'          => $faker->randomElement(['ingreso', 'egreso']),
-                'is_active'             => true,
-            ]);
+        foreach ($transferencias as $transferencia) {
+            TransferenciaDocumental::create($transferencia);
         }
     }
 }

@@ -20,7 +20,6 @@ class TransferenciaDocumentalController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtener los filtros desde la solicitud
         $dependencia_id = $request->get('dependencia_id');
         $serie_documental_id = $request->get('serie_documental_id');
         $subserie_documental_id = $request->get('subserie_documental_id');
@@ -31,10 +30,8 @@ class TransferenciaDocumentalController extends Controller
         $fecha_inicio = $request->get('fecha_inicio');
         $fecha_fin = $request->get('fecha_fin');
 
-        // Iniciar la consulta
         $query = TransferenciaDocumental::query();
 
-        // Aplicar los filtros
         if ($dependencia_id) {
             $query->where('dependencia_id', $dependencia_id);
         }
@@ -67,30 +64,28 @@ class TransferenciaDocumentalController extends Controller
             $query->whereBetween('registro_entrada', [$fecha_inicio, $fecha_fin]);
         }
 
-        // Paginación
-        $transferencias = $query->paginate(50);
+        $transferencias = $query->with('detalles')->paginate(10);
 
-        // Obtener listas para los filtros
         $dependencias = Dependencia::active()->pluck('nombre', 'id');
         $series = SerieDocumental::active()->pluck('nombre', 'id');
         $subseries = SubserieDocumental::active()->pluck('nombre', 'id');
         $ubicaciones = Ubicacion::active()->pluck('estante', 'id');
         $soportes = Soporte::active()->pluck('nombre', 'id');
 
-        return view('inventarios.transferencias.index', compact(
-            'transferencias',
-            'dependencias',
-            'series',
-            'subseries',
-            'ubicaciones',
-            'soportes'
-        ));
+        return view('inventarios.transferencias.index', compact('transferencias', 'dependencias', 'series', 'subseries', 'ubicaciones', 'soportes'));
     }
 
 
     public function create()
     {
         $transferencia = new TransferenciaDocumental();
+
+        // Obtener el último número de transferencia registrado
+        $lastTransfer = TransferenciaDocumental::latest()->first();
+        $lastTransferNumber = (int) ($lastTransfer->numero_transferencia ?? 0);  // Convierte a entero
+        $nextTransferNumber = $lastTransferNumber + 1;  // Sumar 1 al número de transferencia
+
+
         return view('inventarios.transferencias.create', [
             'dependencias' => Dependencia::active()->pluck('nombre', 'id'),
             'series' => SerieDocumental::active()->pluck('nombre', 'id'),
@@ -98,10 +93,9 @@ class TransferenciaDocumentalController extends Controller
             'ubicaciones' => Ubicacion::active()->pluck('estante', 'id'),
             'soportes' => Soporte::active()->pluck('nombre', 'id'),
             'transferencia' => $transferencia,  // Asegúrate de pasar el objeto transferencia vacío
+            'nextTransferNumber' => $nextTransferNumber,  // Pasamos el siguiente número de transferencia
         ]);
     }
-
-
 
     public function store(Request $request)
     {
@@ -121,7 +115,6 @@ class TransferenciaDocumentalController extends Controller
 
         return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia creada correctamente');
     }
-
 
     public function edit(TransferenciaDocumental $transferenciaDocumental)
     {
@@ -156,8 +149,6 @@ class TransferenciaDocumentalController extends Controller
 
         return redirect()->route('inventarios.transferencias.index')->with('success', 'Transferencia actualizada correctamente');
     }
-
-
 
     public function destroy(TransferenciaDocumental $transferenciaDocumental)
     {

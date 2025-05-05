@@ -1,7 +1,6 @@
 <x-admin-layout>
     <x-slot name="title">Inventario Documental</x-slot>
 
-    <!-- Usar container-fluid para que la tabla ocupe todo el ancho disponible -->
     <div class="container-fluid">
         <h1 class="mb-4">Inventario Documental</h1>
 
@@ -9,7 +8,6 @@
             Nueva Transferencia
         </a>
 
-        <!-- Formulario de filtros -->
         <form method="GET" action="{{ route('inventarios.transferencias.index') }}">
             <div class="row">
                 <div class="col-md-3">
@@ -50,16 +48,13 @@
                 </div>
             </div>
 
-            <!-- Botón para aplicar filtros -->
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            <!-- Botón para limpiar filtros -->
             <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
                 Filtros</a>
         </form>
 
         <br>
 
-        <!-- Paginación -->
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <span>Mostrando {{ $transferencias->firstItem() }} a {{ $transferencias->lastItem() }} de
@@ -71,72 +66,100 @@
         </div>
     </div>
 
-    <!-- Asegurarse de que la tabla sea responsiva y ocupe todo el espacio disponible -->
     <div class="table-responsive">
-        <table class="table table-striped w-100"> <!-- La clase w-100 garantiza que la tabla ocupe todo el ancho -->
+        <table class="table table-striped w-100">
             <thead>
                 <tr>
-                    <th>Código Interno</th>
-                    <th>Dependencia</th>
-                    <th>Serie</th>
-                    <th>Subserie</th>
-                    <th>Ubicación</th>
-                    <th>Soporte</th>
-                    <th>Estado</th>
+                    <th style="width: 10%;">Número de Transferencia</th>
+                    <th>Entidad Remitente</th>
+                    <th>Entidad Productora</th>
+                    <th>Unidad Administrativa</th>
+                    <th>Oficina Productora</th>
+                    <th>Registro de Entrada</th>
+                    <th>Objeto</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($transferencias as $t)
+                @foreach ($transferencias as $t)
                     <tr>
-                        <td>{{ $t->codigo_interno }}</td>
-                        <td>{{ optional($t->dependencia)->nombre }}</td>
-                        <td>{{ optional($t->serieDocumental)->nombre }}</td>
-                        <td>{{ optional($t->subserieDocumental)->nombre }}</td>
+                        <td style="font-size: 0.8em;">{{ $t->id }}</td>
+                        <td>{{ $t->entidad_productora }}</td>
+                        <td>{{ $t->entidad_productora }}</td>
+                        <td>{{ $t->unidad_administrativa }}</td>
+                        <td>{{ $t->oficina_productora }}</td>
+                        <td>{{ \Carbon\Carbon::parse($t->registro_entrada)->format('Y-m-d') }}</td>
+                        <td>{{ $t->objeto }}</td>
                         <td>
-                            {{ optional($t->ubicacion)->estante .
-                                ' - ' .
-                                optional($t->ubicacion)->bandeja .
-                                ' - ' .
-                                optional($t->ubicacion)->caja .
-                                ' - ' .
-                                optional($t->ubicacion)->carpeta .
-                                ' - ' .
-                                optional($t->ubicacion)->otro }}
+                            <!-- Buttons with icons properly aligned -->
+                            <div class="d-flex">
+                                <a href="{{ route('inventarios.transferencias.edit', $t) }}"
+                                    class="btn btn-sm btn-primary mr-2">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form action="{{ route('inventarios.transferencias.destroy', $t) }}" method="POST"
+                                    onsubmit="return confirm('¿Eliminar esta transferencia?')" class="mb-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
                         </td>
-                        <td>{{ optional($t->soporte)->nombre }}</td>
-                        <td>
-                            <!-- Estado con badge y color basado en el valor de estado_flujo -->
-                            <span class="badge {{ $t->estado_flujo == 'disponible' ? 'bg-success' : 'bg-warning' }}">
-                                {{ ucfirst($t->estado_flujo) }}
-                            </span>
-                        </td>
-
-                        <td class="d-flex gap-1">
-                            <!-- Botón de editar con ícono -->
-                            <a href="{{ route('inventarios.transferencias.edit', $t) }}" class="btn btn-sm btn-primary"
-                                title="Editar">
-                                <i class="fa-solid fa-pen"></i> Editar
-                            </a>
-
-                            <!-- Formulario para borrar con confirmación -->
-                            <form action="{{ route('inventarios.transferencias.destroy', $t) }}" method="POST"
-                                onsubmit="return confirm('¿Eliminar esta transferencia?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-danger" title="Borrar">
-                                    <i class="fa-solid fa-trash"></i> Borrar
-                                </button>
-                            </form>
-                        </td>
-
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="9">No hay transferencias registradas.</td>
-                    </tr>
-                @endforelse
+
+                    @foreach ($t->detalles as $index => $detalle)
+                        @if ($index === 0)
+                            <tr>
+                                <td colspan="8">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>N° Orden</th>
+                                                <th>Código</th>
+                                                <th>Nombre Series/Subserie</th>
+                                                <th>Fecha Inicial</th>
+                                                <th>Fecha Final</th>
+                                                <th>Caja</th>
+                                                <th>Carpeta</th>
+                                                <th>Resolución</th>
+                                                <th>Otro</th>
+                                                <th>N° Folios</th>
+                                                <th>Soporte</th>
+                                                <th>Frecuencia de Consulta</th>
+                                                <th>Ubicación</th>
+                                                <th>Observaciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        @endif
+                        <tr>
+                            <td>{{ $detalle->numero_orden }}</td>
+                            <td>{{ $detalle->codigo }}</td>
+                            <td>{{ $detalle->nombre_series_subserie }}</td>
+                            <td>{{ $detalle->fecha_inicial }}</td>
+                            <td>{{ $detalle->fecha_final }}</td>
+                            <td>{{ $detalle->caja }}</td>
+                            <td>{{ $detalle->carpeta }}</td>
+                            <td>{{ $detalle->resolucion }}</td>
+                            <td>{{ $detalle->otro }}</td>
+                            <td>{{ $detalle->numero_folios }}</td>
+                            <td>{{ $detalle->soporte }}</td>
+                            <td>{{ $detalle->frecuencia_consulta }}</td>
+                            <td>{{ $detalle->ubicacion_caja . ' - ' . $detalle->ubicacion_bandeja . ' - ' . $detalle->ubicacion_estante }}
+                            </td>
+                            <td>{{ $detalle->observaciones }}</td>
+                        </tr>
+                        @if ($index === count($t->detalles) - 1)
             </tbody>
+        </table>
+        </td>
+        </tr>
+        @endif
+        @endforeach
+        @endforeach
+        </tbody>
         </table>
     </div>
 </x-admin-layout>
