@@ -33,7 +33,7 @@ return new class extends Migration
             $table->date('registro_entrada')->nullable();  // Fecha de registro de entrada
             $table->string('numero_transferencia', 30)->nullable();  // Número de transferencia
             $table->text('objeto')->nullable();  // Descripción o objeto de la transferencia
-            $table->string('estado_flujo', 30)->default('ingreso');  // Estado de flujo, por defecto 'ingreso'
+            $table->string('estado_flujo', 30)->default('ELABORADO');  // Estado de flujo, por defecto 'ingreso'
             $table->boolean('is_active')->default(true);  // Estado activo
             $table->timestamps();  // Timestamps (created_at, updated_at)
             $table->softDeletes();  // Soporte para eliminación suave (soft deletes)

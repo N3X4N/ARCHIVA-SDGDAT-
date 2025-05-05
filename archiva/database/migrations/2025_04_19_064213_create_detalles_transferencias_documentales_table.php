@@ -37,6 +37,7 @@ return new class extends Migration
         $table->string('ubicacion_bandeja')->nullable();  // Ubicación de la bandeja
         $table->string('ubicacion_estante')->nullable();  // Ubicación del estante
         $table->text('observaciones')->nullable();  // Observaciones adicionales
+        $table->string('estado_flujo', 30)->default('Activo'); // Estado de flujo, por defecto 'ingreso'
         $table->timestamps();  // Timestamps (created_at, updated_at)
         $table->softDeletes();
     });
