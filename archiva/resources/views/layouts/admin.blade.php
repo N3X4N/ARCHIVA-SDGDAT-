@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,29 +14,36 @@
     .sidebar {
       height: 100vh;
       position: fixed;
-      top: 56px; /* Altura del navbar */
+      top: 56px;
+      /* Altura del navbar */
       left: 0;
       width: 220px;
-      background-color: #2E5077 ;
+      background-color: #2E5077;
       color: #fff;
       transition: width 0.3s;
       overflow: hidden;
     }
+
     .sidebar.collapsed {
       width: 60px;
     }
+
     .sidebar .nav-link {
       color: #fff;
     }
+
     .sidebar .nav-link:hover {
-      background-color: #2E5077  ;
+      background-color: #2E5077;
     }
+
     .hide-on-collapse {
       transition: opacity 0.3s;
     }
+
     .sidebar.collapsed .hide-on-collapse {
       opacity: 0;
     }
+
     .toggle-btn {
       background: none;
       border: none;
@@ -44,20 +52,24 @@
       text-align: right;
       padding: 0.5rem;
     }
+
     .profile-section {
       background-color: #495057;
     }
+
     /* Contenido principal */
     .content {
       margin-left: 220px;
       padding: 60px 20px 20px 20px;
       transition: margin-left 0.3s;
     }
-    .sidebar.collapsed ~ .content {
+
+    .sidebar.collapsed~.content {
       margin-left: 60px;
     }
   </style>
 </head>
+
 <body>
   <!-- Nav Bar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -97,28 +109,83 @@
 
         <!-- Transferencias: solo admin y archivista -->
         @if(auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-          <a href="{{ route('inventarios.transferencias.index') }}"
-             class="sidebar-link nav-link p-3 {{ request()->is('inventarios/transferencias*') ? 'active' : '' }}">
-            <i class="fas fa-archive me-3"></i>
-            <span class="hide-on-collapse">Transferencias</span>
-          </a>
+        <a href="{{ route('inventarios.transferencias.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('inventarios/transferencias*') ? 'active' : '' }}">
+          <i class="fas fa-archive me-3"></i>
+          <span class="hide-on-collapse">Transferencias</span>
+        </a>
         @endif
 
         <!-- Préstamos: todos los roles -->
         <a href="{{ route('prestamos.index') }}"
-           class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
           <i class="fas fa-book me-3"></i>
           <span class="hide-on-collapse">Préstamos</span>
         </a>
 
         <!-- Usuarios: solo admin -->
         @if(auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
-          <a href="{{ route('admin.users.index') }}"
-             class="sidebar-link nav-link p-3 {{ request()->is('admin/users*') ? 'active' : '' }}">
-            <i class="fas fa-users me-3"></i>
-            <span class="hide-on-collapse">Usuarios</span>
-          </a>
+        <a href="{{ route('admin.users.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('admin/users*') ? 'active' : '' }}">
+          <i class="fas fa-users me-3"></i>
+          <span class="hide-on-collapse">Usuarios</span>
+        </a>
         @endif
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-diagram-project"></i>
+          <span class="hide-on-collapse">Dependencias</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fas fa-book me-3"></i>
+          <span class="hide-on-collapse">ubicacíon</span>
+        </a>
+
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-clone"></i>
+          <span class="hide-on-collapse">Series</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-clone"></i>
+          <span class="hide-on-collapse">Subseries</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fas fa-book me-3"></i>
+          <span class="hide-on-collapse">Tipo Documental</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-compact-disc"></i>
+          <span class="hide-on-collapse">Soportes</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-table-cells-column-lock"></i>
+          <span class="hide-on-collapse">Tabla de retención</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-folder-tree"></i>
+          <span class="hide-on-collapse">Clasificacíon documental</span>
+        </a>
+
+        <a href="{{ route('prestamos.index') }}"
+          class="sidebar-link nav-link p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
+          <i class="fa-solid fa-user"></i>
+          <span class="hide-on-collapse">Roles</span>
+        </a>
       </div>
     </nav>
 
@@ -137,6 +204,7 @@
   <script src="https://unpkg.com/feather-icons"></script>
   <script>
     feather.replace();
+
     function toggleSidebar() {
       const sidebar = document.querySelector('.sidebar');
       const toggleIcon = document.querySelector('.toggle-btn i');
@@ -152,4 +220,5 @@
   </script>
 
 </body>
+
 </html>
