@@ -13,74 +13,92 @@ class DependenciaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Dependencia::query();
+
+        // Filtrar por estado (activo/inactivo)
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
+
+        // Filtrar por nombre
+        if ($request->has('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        // Paginación
+        $dependencias = $query->paginate(50);
+
+        return view('inventarios.dependencias.index', compact('dependencias'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('inventarios.dependencias.create');  // Crear vista para formulario de dependencias
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Dependencia  $dependencia
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Dependencia $dependencia)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Dependencia  $dependencia
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Dependencia $dependencia)
     {
-        //
+        return view('inventarios.dependencias.edit', compact('dependencia'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Dependencia  $dependencia
-     * @return \Illuminate\Http\Response
-     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'nombre'    => ['required', 'string'],
+            'sigla'     => ['required', 'alpha'],
+            'codigo'    => ['required', 'regex:/^\d+$/'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        // Asegurar que se guarde en mayúsculas
+        $data['nombre'] = strtoupper($data['nombre']);
+        $data['sigla']  = strtoupper($data['sigla']);
+
+        Dependencia::create($data);
+
+        return redirect()
+            ->route('inventarios.dependencias.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Dependencia creada correctamente.');
+    }
+
+
+
     public function update(Request $request, Dependencia $dependencia)
     {
-        //
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'sigla' => 'nullable|string|max:50',
+            'codigo' => 'nullable|string|max:50',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $dependencia->update($request->all());
+
+        return redirect()->route('inventarios.dependencias.index')
+            ->with('alertType', 'success')
+            ->with('success', 'Dependencia actualizada correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Dependencia  $dependencia
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Dependencia $dependencia)
     {
-        //
+        // 1) Comprobar si tiene transferencias relacionadas
+        if ($dependencia->transferencias()->exists()) {
+            return redirect()
+                ->route('inventarios.dependencias.index')
+                ->with('alertType', 'warning')
+                ->with('alertMessage', 'No se puede eliminar esta dependencia porque tiene transferencias asociadas.');
+        }
+
+        // 2) Si no hay relaciones, eliminar con normalidad
+        $dependencia->delete();
+
+        return redirect()
+            ->route('inventarios.dependencias.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Dependencia eliminada correctamente.');
     }
+
 }

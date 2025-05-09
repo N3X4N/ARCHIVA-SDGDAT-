@@ -73,3 +73,17 @@ Route::prefix('inventarios')
         Route::resource('transferencias', TransferenciaDocumentalController::class);
     });
 
+Route::get(
+    'inventarios/transferencias/{transferencia}/edit',
+    [TransferenciaDocumentalController::class, 'edit']
+)
+    ->name('inventarios.transferencias.edit');
+
+
+Route::prefix('inventarios')
+    ->name('inventarios.')
+    ->middleware(['auth', 'role:admin'])
+    ->group(function () {
+        // Ruta para Dependencias
+        Route::resource('dependencias', DependenciaController::class);
+    });

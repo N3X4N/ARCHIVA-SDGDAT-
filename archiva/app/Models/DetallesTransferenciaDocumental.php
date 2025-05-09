@@ -14,7 +14,6 @@ class DetallesTransferenciaDocumental extends Model
 
     // The attributes that are mass assignable
     protected $fillable = [
-        'id',
         'transferencia_id',
         'ubicacion_id',
         'numero_orden',
