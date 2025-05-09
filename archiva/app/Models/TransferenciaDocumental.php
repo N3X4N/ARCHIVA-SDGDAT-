@@ -21,26 +21,17 @@ class TransferenciaDocumental extends Model
     protected $table = 'transferencias_documentales';
 
     protected $fillable = [
-        'id',
         'user_id',
         'dependencia_id',
-        'serie_documental_id',
-        'subserie_documental_id',
         'ubicacion_id',
-        'soporte_id',
+        'entidad_productora',
+        'unidad_administrativa',
         'oficina_productora',
         'registro_entrada',
         'numero_transferencia',
         'objeto',
-        'numero_orden',
-        'codigo_interno',
-        'fecha_extrema_inicial',
-        'fecha_extrema_final',
-        'numero_folios',
-        'frecuencia_consulta',
-        'observaciones',
         'estado_flujo',
-        'is_active'
+        'is_active',
     ];
 
     public function user()

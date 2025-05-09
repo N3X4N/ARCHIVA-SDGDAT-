@@ -1,36 +1,20 @@
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const serieSelect = document.querySelector('select[name="serie_documental_id"]');
-            const subserieSelect = document.querySelector('select[name="subserie_documental_id"]');
-            const subserieActual = "{{ old('subserie_documental_id', $transferencia->subserie_documental_id) }}";
+{{-- resources/views/inventarios/transferencias/edit.blade.php --}}
+<x-admin-layout>
+    <x-slot name="title">Editar Transferencia Documental</x-slot>
 
-            function cargarSubseries(serieId, selected = null) {
-                subserieSelect.innerHTML = '<option value="">Cargando...</option>';
+    <div class="container">
+        <h1 class="mb-4">Editar Transferencia #{{ $transferencia->numero_transferencia }}</h1>
 
-                fetch(`/subseries-por-serie/${serieId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        let options = '<option value="">Seleccione...</option>';
-                        data.forEach(subserie => {
-                            const selectedAttr = (selected && selected == subserie.id) ? 'selected' :
-                            '';
-                            options +=
-                                `<option value="${subserie.id}" ${selectedAttr}>${subserie.nombre}</option>`;
-                        });
-                        subserieSelect.innerHTML = options;
-                    });
-            }
+        <form action="{{ route('inventarios.transferencias.update', $transferencia) }}" method="POST">
+            @csrf
+            @method('PUT')  {{-- ← Importante --}}
+            @include('inventarios.transferencias._form', [
+                'transferencia'      => $transferencia,
+                'nextTransferNumber' => $transferencia->numero_transferencia, // para que el input siga readonly
+            ])
 
-            // Evento cuando cambia la serie
-            serieSelect.addEventListener('change', function() {
-                cargarSubseries(this.value);
-            });
-
-            // Al cargar por primera vez (modo edición)
-            if (serieSelect.value) {
-                cargarSubseries(serieSelect.value, subserieActual);
-            }
-        });
-    </script>
-@endpush
+            <button type="submit" class="btn btn-success">Actualizar</button>
+            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</x-admin-layout>

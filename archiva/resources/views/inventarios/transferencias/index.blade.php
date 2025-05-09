@@ -15,8 +15,7 @@
                     <select name="dependencia_id" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach ($dependencias as $id => $nombre)
-                            <option value="{{ $id }}"
-                                {{ request('dependencia_id') == $id ? 'selected' : '' }}>
+                            <option value="{{ $id }}" {{ request('dependencia_id') == $id ? 'selected' : '' }}>
                                 {{ $nombre }}
                             </option>
                         @endforeach
@@ -24,13 +23,12 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label for="serie_documental_id">Serie Documental</label>
-                    <select name="serie_documental_id" class="form-control">
+                    <label for="estado_flujo">Estado</label>
+                    <select name="estado_flujo" class="form-control">
                         <option value="">Seleccione...</option>
-                        @foreach ($series as $id => $nombre)
-                            <option value="{{ $id }}"
-                                {{ request('serie_documental_id') == $id ? 'selected' : '' }}>
-                                {{ $nombre }}
+                        @foreach ($estados as $key => $estado)
+                            <option value="{{ $key }}" {{ request('estado_flujo') == $key ? 'selected' : '' }}>
+                                {{ $estado }}
                             </option>
                         @endforeach
                     </select>
@@ -38,8 +36,7 @@
 
                 <div class="col-md-3">
                     <label for="fecha_inicio">Fecha de Registro</label>
-                    <input type="date" name="fecha_inicio" class="form-control"
-                        value="{{ request('fecha_inicio') }}">
+                    <input type="date" name="fecha_inicio" class="form-control" value="{{ request('fecha_inicio') }}">
                 </div>
 
                 <div class="col-md-3">
@@ -49,8 +46,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
-                Filtros</a>
+            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar Filtros</a>
         </form>
 
         <br>
