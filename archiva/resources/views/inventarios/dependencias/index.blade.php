@@ -14,7 +14,7 @@
             <div class="row g-3 align-items-end">
                 <!-- Filtro Nombre -->
                 <div class="col-md-3">
-                    <label for="nombre" class="form-label">Nombre</label>
+                    <label for="name" class="form-label">Nombre</label>
                     <input type="text" name="nombre" class="form-control" value="{{ request('nombre') }}"
                         placeholder="Buscar por nombre">
                 </div>

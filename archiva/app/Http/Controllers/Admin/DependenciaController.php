@@ -5,30 +5,31 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Dependencia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DependenciaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         $query = Dependencia::query();
 
-        // Filtrar por estado (activo/inactivo)
-        if ($request->has('is_active')) {
+        // Estado (opcional)
+        if ($request->filled('is_active')) {
             $query->where('is_active', $request->is_active);
         }
 
-        // Filtrar por nombre
-        if ($request->has('nombre')) {
-            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        // Nombre: sólo si escribiste algo
+        if ($request->filled('nombre')) {
+            $buscado = Str::lower(trim($request->nombre));
+
+            // Forzamos minúsculas en la columna y en el término de búsqueda
+            $query->whereRaw('LOWER(nombre) LIKE ?', ["%{$buscado}%"]);
         }
 
-        // Paginación
-        $dependencias = $query->paginate(50);
+        // Paginamos y mantenemos los filtros en la URL
+        $dependencias = $query
+            ->paginate(50)
+            ->appends($request->only(['nombre', 'is_active']));
 
         return view('inventarios.dependencias.index', compact('dependencias'));
     }
@@ -100,5 +101,4 @@ class DependenciaController extends Controller
             ->with('alertType', 'success')
             ->with('alertMessage', 'Dependencia eliminada correctamente.');
     }
-
 }
