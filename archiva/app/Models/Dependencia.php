@@ -21,4 +21,9 @@ class Dependencia extends Model
     {
         return $this->hasMany(\App\Models\TransferenciaDocumental::class, 'dependencia_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(\App\Models\User::class, 'dependencia_id');
+    }
 }

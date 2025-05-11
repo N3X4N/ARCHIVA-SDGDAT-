@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dependencia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DependenciaController extends Controller
 {
@@ -47,10 +48,27 @@ class DependenciaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nombre'    => ['required', 'string'],
-            'sigla'     => ['required', 'alpha'],
-            'codigo'    => ['required', 'regex:/^\d+$/'],
+            'nombre'    => [
+                'required',
+                'string',
+                'unique:dependencias,nombre'
+            ],
+            'sigla'     => [
+                'required',
+                'alpha',
+                'max:3',
+                'unique:dependencias,sigla'
+            ],
+            'codigo'    => [
+                'required',
+                'regex:/^\d+$/',
+                'unique:dependencias,codigo'
+            ],
             'is_active' => ['required', 'boolean'],
+        ], [
+            'nombre.unique' => 'Ese nombre ya está en uso.',
+            'sigla.unique'  => 'Esa sigla ya está en uso.',
+            'codigo.unique' => 'Ese código ya está en uso.',
         ]);
 
         // Asegurar que se guarde en mayúsculas
@@ -69,31 +87,53 @@ class DependenciaController extends Controller
 
     public function update(Request $request, Dependencia $dependencia)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'sigla' => 'nullable|string|max:50',
-            'codigo' => 'nullable|string|max:50',
-            'is_active' => 'required|boolean',
+        $data = $request->validate([
+            'nombre'    => [
+                'required','string','max:255',
+                Rule::unique('dependencias','nombre')
+                    ->ignore($dependencia->id)
+            ],
+            'sigla'     => [
+                'required','alpha','max:3',
+                Rule::unique('dependencias','sigla')
+                    ->ignore($dependencia->id)
+            ],
+            'codigo'    => [
+                'required','regex:/^\d+$/',
+                Rule::unique('dependencias','codigo')
+                    ->ignore($dependencia->id)
+            ],
+            'is_active' => ['required','boolean'],
+        ], [
+            'nombre.unique' => 'Ese nombre ya está en uso por otra dependencia.',
+            'sigla.unique'  => 'Esa sigla ya está en uso por otra dependencia.',
+            'codigo.unique' => 'Ese código ya está en uso por otra dependencia.',
         ]);
 
-        $dependencia->update($request->all());
+        $data['nombre'] = strtoupper($data['nombre']);
+        $data['sigla']  = strtoupper($data['sigla']);
 
-        return redirect()->route('inventarios.dependencias.index')
-            ->with('alertType', 'success')
-            ->with('success', 'Dependencia actualizada correctamente.');
+        $dependencia->update($data);
+
+        return redirect()
+            ->route('inventarios.dependencias.index')
+            ->with('alertType','success')
+            ->with('alertMessage','Dependencia actualizada correctamente.');
     }
+
 
     public function destroy(Dependencia $dependencia)
     {
-        // 1) Comprobar si tiene transferencias relacionadas
-        if ($dependencia->transferencias()->exists()) {
+        $tieneTransf = $dependencia->transferencias()->exists();
+        $tieneUsers  = $dependencia->users()->exists();
+
+        if ($tieneTransf || $tieneUsers) {
             return redirect()
                 ->route('inventarios.dependencias.index')
                 ->with('alertType', 'warning')
-                ->with('alertMessage', 'No se puede eliminar esta dependencia porque tiene transferencias asociadas.');
+                ->with('alertMessage', 'No se puede eliminar esta dependencia porque está asociada a transferencias o usuarios.');
         }
 
-        // 2) Si no hay relaciones, eliminar con normalidad
         $dependencia->delete();
 
         return redirect()
