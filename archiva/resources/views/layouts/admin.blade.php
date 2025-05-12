@@ -138,6 +138,16 @@
           </a>
         @endif
 
+        @if(auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
+          <a
+            href="{{ route('admin.roles.index') }}"
+            class="nav-link d-flex align-items-center p-3 {{ request()->is('admin/roles*') ? 'active' : '' }}"
+          >
+            <i class="fa-solid fa-users-gear me-3"></i>
+            <span class="hide-on-collapse">Roles</span>
+          </a>
+        @endif
+
         @if(auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin','archivista']))
           <a
             href="{{ route('inventarios.dependencias.index') }}"

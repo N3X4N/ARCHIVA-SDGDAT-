@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     protected $fillable = [
-        'name',
+        'nombre_rol',
+        'is_active',
         'description',
     ];
 
