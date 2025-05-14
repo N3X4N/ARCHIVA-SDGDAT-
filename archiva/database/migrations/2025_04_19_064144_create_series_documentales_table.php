@@ -21,8 +21,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
             $table->string('codigo', 20)->unique();
-            $table->string('nombre', 150);
-            $table->enum('tipo', ['principal', 'subserie', 'agrupadora']);
+            $table->string('nombre', 150)->unique();
             $table->text('observaciones')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestampsTz();
