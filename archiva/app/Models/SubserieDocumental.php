@@ -2,24 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\SeriesDocumental;
 
 class SubserieDocumental extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    // Especificamos el nombre correcto de la tabla
     protected $table = 'subseries_documentales';
 
-    protected $fillable = ['nombre', 'codigo', 'serie_documental_id', 'is_active'];
+    protected $fillable = [
+        'serie_documental_id',
+        'codigo',
+        'nombre',
+        'is_active',
+    ];
 
-    public function serieDocumental()
+    public function serie()
     {
-        return $this->belongsTo(SerieDocumental::class);
-    }
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
+        return $this->belongsTo(SerieDocumental::class, 'serie_documental_id');
     }
 }
