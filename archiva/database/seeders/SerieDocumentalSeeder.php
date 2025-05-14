@@ -4,27 +4,66 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\SerieDocumental;
+use App\Models\TipoDocumental;
 
 class SerieDocumentalSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        // Datos de ejemplo para Series Documentales
+        // Define cada serie y sus tipos documentales asociados
         $series = [
-            ['codigo' => 'S001', 'nombre' => 'Contratos', 'tipo' => 'principal', 'is_active' => true],
-            ['codigo' => 'S002', 'nombre' => 'Facturas', 'tipo' => 'principal', 'is_active' => true],
-            ['codigo' => 'S003', 'nombre' => 'Informes Financieros', 'tipo' => 'agrupadora', 'is_active' => true],
-            ['codigo' => 'S004', 'nombre' => 'Actas de Reunión', 'tipo' => 'principal', 'is_active' => true],
-            ['codigo' => 'S005', 'nombre' => 'Correspondencia', 'tipo' => 'principal', 'is_active' => true],
+            [
+                'codigo'        => 'S001',
+                'nombre'        => 'Contratos',
+                'observaciones' => null,
+                'is_active'     => true,
+                'tipos'         => ['CONTRATO'],
+            ],
+            [
+                'codigo'        => 'S002',
+                'nombre'        => 'Facturas',
+                'observaciones' => null,
+                'is_active'     => true,
+                'tipos'         => ['FACTURA'],
+            ],
+            [
+                'codigo'        => 'S003',
+                'nombre'        => 'Informes Financieros',
+                'observaciones' => null,
+                'is_active'     => true,
+                'tipos'         => ['INFORME'],
+            ],
+            [
+                'codigo'        => 'S004',
+                'nombre'        => 'Actas de Reunión',
+                'observaciones' => null,
+                'is_active'     => true,
+                'tipos'         => ['ACTA'],
+            ],
+            [
+                'codigo'        => 'S005',
+                'nombre'        => 'Correspondencia',
+                'observaciones' => null,
+                'is_active'     => true,
+                'tipos'         => ['MEMORANDO', 'CIRCULAR'],
+            ],
         ];
 
-        foreach ($series as $serie) {
-            SerieDocumental::create($serie);
+        foreach ($series as $data) {
+            // 1) Crear la serie
+            $serie = SerieDocumental::create([
+                'serie_padre_id' => null,
+                'codigo'         => $data['codigo'],
+                'nombre'         => $data['nombre'],
+                'observaciones'  => $data['observaciones'],
+                'is_active'      => $data['is_active'],
+            ]);
+
+            // 2) Asociar los tipos documentales en la tabla pivote
+            $tipoIds = TipoDocumental::whereIn('nombre', $data['tipos'])
+                ->pluck('id')
+                ->toArray();
+            $serie->tiposDocumentales()->sync($tipoIds);
         }
     }
 }
