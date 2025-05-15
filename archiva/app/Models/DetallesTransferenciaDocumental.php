@@ -18,7 +18,8 @@ class DetallesTransferenciaDocumental extends Model
         'ubicacion_id',
         'numero_orden',
         'codigo',
-        'nombre_series_subserie',
+        'serie_documental_id',
+        'subserie_documental_id',
         'fecha_inicial',
         'fecha_final',
         'caja',
@@ -47,4 +48,10 @@ class DetallesTransferenciaDocumental extends Model
     {
         return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
+
+    public function serie()
+    { return $this->belongsTo(SerieDocumental::class,'serie_documental_id'); }
+
+    public function subserie()
+    { return $this->belongsTo(SubserieDocumental::class,'subserie_documental_id'); }
 }
