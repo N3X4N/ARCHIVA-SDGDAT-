@@ -1,13 +1,12 @@
 <x-admin-layout>
-    <x-slot name="title">Crear Dependencia</x-slot>
-
-    <div class="container">
-        <h1 class="mb-4">Crear Dependencia</h1>
-        <form action="{{ route('inventarios.dependencias.store') }}" method="POST" autocomplete="off">
+    <x-slot name="title">Nueva Serie Documental</x-slot>
+    <div class="container-fluid">
+        <h1>Crear Serie Documental</h1>
+        <form method="POST" action="{{ route('series.store') }}">
             @csrf
-            @include('inventarios.dependencias._form', ['dependencia' => new \App\Models\Dependencia])
+            @include('series._form')
             <button class="btn btn-success">Guardar</button>
-            <a href="{{ route('inventarios.dependencias.index') }}" class="btn btn-secondary">Cancelar</a>
+            <a href="{{ route('series.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </x-admin-layout>

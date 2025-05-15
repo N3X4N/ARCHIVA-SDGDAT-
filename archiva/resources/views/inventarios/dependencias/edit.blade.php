@@ -1,15 +1,12 @@
 <x-admin-layout>
-    <x-slot name="title">Editar Dependencia - {{ $dependencia->nombre }}</x-slot>
-
-    <div class="container">
-      <h1>Editar Dependencia: {{ $dependencia->nombre }}</h1>
-
-      <form action="{{ route('inventarios.dependencias.update', $dependencia) }}" method="POST">
-        @csrf
-        @method('PUT')
-        @include('inventarios.dependencias._form')
-        <button class="btn btn-success">Actualizar</button>
-        <a href="{{ route('inventarios.dependencias.index') }}" class="btn btn-secondary">Cancelar</a>
-      </form>
+    <x-slot name="title">Editar Serie: {{ $serie->nombre }}</x-slot>
+    <div class="container-fluid">
+        <h1>Editar Serie Documental</h1>
+        <form method="POST" action="{{ route('series.update', $serie) }}">
+            @csrf @method('PUT')
+            @include('series._form')
+            <button class="btn btn-success">Actualizar</button>
+            <a href="{{ route('series.index') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
     </div>
-  </x-admin-layout>
+</x-admin-layout>

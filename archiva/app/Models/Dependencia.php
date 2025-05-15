@@ -26,4 +26,15 @@ class Dependencia extends Model
     {
         return $this->hasMany(\App\Models\User::class, 'dependencia_id');
     }
+
+
+    public function subseries()
+    {
+        return $this->belongsToMany(
+            \App\Models\SubserieDocumental::class,
+            'dependencia_subserie',
+            'dependencia_id',
+            'subserie_documental_id'
+        );
+    }
 }
