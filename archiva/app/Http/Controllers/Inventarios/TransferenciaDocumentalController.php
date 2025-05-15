@@ -15,58 +15,76 @@ use Illuminate\Support\Facades\DB;
 
 class TransferenciaDocumentalController extends Controller
 {
-    /* ===== LISTADO ===== */
     public function index(Request $request)
     {
-        $query = TransferenciaDocumental::query();
+        // Cargamos transferencia + detalles + serie + subserie + dependencia
+        $query = TransferenciaDocumental::with([
+            'detalles.serie',
+            'detalles.subserie',
+            'dependencia',
+        ]);
 
-        // Filtro por Dependencia
+        // …tus filtros existentes…
         if ($request->filled('dependencia_id')) {
             $query->where('dependencia_id', $request->dependencia_id);
         }
-
-        // Filtro por Estado
         if ($request->filled('estado_flujo')) {
             $query->where('estado_flujo', $request->estado_flujo);
         }
-
-        // Filtro por Fecha de Registro
         if ($request->filled('fecha_inicio')) {
             $query->where('registro_entrada', '>=', $request->fecha_inicio);
         }
-
         if ($request->filled('fecha_fin')) {
             $query->where('registro_entrada', '<=', $request->fecha_fin);
         }
 
-        // Obtener las transferencias con paginación
-        $transferencias = $query->latest()->paginate(10);  // Puedes cambiar el número de páginas según lo necesites
+        $transferencias = $query->latest()->paginate(10);
 
-        // Cargar los datos para los filtros
         $dependencias = Dependencia::active()->pluck('nombre', 'id');
-        $estados = ['ELABORADO' => 'Elaborado', 'ARCHIVADO' => 'Archivado']; // Ejemplo de estados
+        $estados      = ['ELABORADO' => 'Elaborado', 'ARCHIVADO' => 'Archivado'];
 
-        // Devolver la vista con los datos
-        return view('inventarios.transferencias.index', [
-            'transferencias' => $transferencias,
-            'dependencias' => $dependencias,
-            'estados' => $estados,
-        ]);
+        return view('inventarios.transferencias.index', compact(
+            'transferencias',
+            'dependencias',
+            'estados'
+        ));
     }
 
-    /* ===== FORMULARIO CREAR ===== */
     public function create()
-    {
-        $nextTransferNumber = (int) (TransferenciaDocumental::max('numero_transferencia') ?? 0) + 1;
+{
+    $nextTransferNumber = (int) (TransferenciaDocumental::max('numero_transferencia') ?? 0) + 1;
 
-        return view('inventarios.transferencias.create', [
-            'dependencias'        => Dependencia::active()->pluck('nombre', 'id'),
-            'ubicaciones'         => Ubicacion::active()->pluck('estante', 'id'),
-            'nextTransferNumber'  => $nextTransferNumber,
-        ]);
-    }
+    // Para los selects
+    $dependencias           = Dependencia::active()->pluck('nombre', 'id');
+    $entidadesProductoras   = Dependencia::active()->pluck('nombre', 'id'); // o ajusta si vienen de otro modelo
+    $oficinasProductoras    = Dependencia::active()->pluck('nombre', 'id'); // idem
+    $ubicaciones            = Ubicacion::active()->pluck('estante', 'id');
 
-    /* ===== GUARDAR ===== */
+    // Series / subseries...
+    $seriesList    = SerieDocumental::where('is_active', true)->pluck('nombre', 'id');
+    $seriesCodes   = SerieDocumental::where('is_active', true)->pluck('codigo', 'id')->toArray();
+    $subseriesGroup = SubserieDocumental::where('is_active', true)
+        ->get()
+        ->groupBy('serie_documental_id')
+        ->map(fn($col) => $col->pluck('nombre','id')->toArray())
+        ->toArray();
+    $subseriesCodes = SubserieDocumental::where('is_active', true)
+        ->pluck('codigo', 'id')
+        ->toArray();
+
+    return view('inventarios.transferencias.create', compact(
+        'dependencias',
+        'entidadesProductoras',
+        'oficinasProductoras',
+        'ubicaciones',
+        'nextTransferNumber',
+        'seriesList',
+        'seriesCodes',
+        'subseriesGroup',
+        'subseriesCodes'
+    ));
+}
+
     public function store(Request $request)
     {
         $request->validate([
@@ -87,7 +105,6 @@ class TransferenciaDocumentalController extends Controller
 
         DB::transaction(function () use ($request) {
 
-            /* --- 1. cabecera --- */
             $transferencia = TransferenciaDocumental::create([
                 'user_id'              => auth()->id(),
                 'dependencia_id'       => $request->dependencia_id,
@@ -156,15 +173,30 @@ class TransferenciaDocumentalController extends Controller
 
     public function edit(TransferenciaDocumental $transferencia)
     {
-        // cargamos detalles para pintarlos
-        $transferencia->load('detalles');   // Eager‑load
+        $transferencia->load(['detalles.serie', 'detalles.subserie']);
 
-        return view('inventarios.transferencias.edit', [
-            'transferencia'   => $transferencia,
-            'dependencias'    => Dependencia::active()->pluck('nombre', 'id'),
-            'ubicaciones'     => Ubicacion::active()->pluck('estante', 'id'),
-            'nextTransferNumber' => $transferencia->numero_transferencia, // ya existe
-        ]);
+        $seriesList   = SerieDocumental::where('is_active', true)->pluck('nombre', 'id');
+        $seriesCodes  = SerieDocumental::where('is_active', true)->pluck('codigo', 'id')->toArray();
+
+        $subseriesList  = SubserieDocumental::where('is_active', true)
+            ->get()
+            ->groupBy('serie_documental_id')
+            ->map(fn($col) => $col->pluck('nombre', 'id')->toArray())
+            ->toArray();
+        $subseriesCodes = SubserieDocumental::where('is_active', true)
+            ->pluck('codigo', 'id')
+            ->toArray();
+
+        return view('inventarios.transferencias.edit', compact(
+            'transferencia',
+            'dependencias',
+            'ubicaciones',
+            'nextTransferNumber',
+            'seriesList',
+            'seriesCodes',
+            'subseriesList',
+            'subseriesCodes'
+        ));
     }
 
 

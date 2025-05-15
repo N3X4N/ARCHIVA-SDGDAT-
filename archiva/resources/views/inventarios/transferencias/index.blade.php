@@ -15,7 +15,8 @@
                     <select name="dependencia_id" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach ($dependencias as $id => $nombre)
-                            <option value="{{ $id }}" {{ request('dependencia_id') == $id ? 'selected' : '' }}>
+                            <option value="{{ $id }}"
+                                {{ request('dependencia_id') == $id ? 'selected' : '' }}>
                                 {{ $nombre }}
                             </option>
                         @endforeach
@@ -36,7 +37,8 @@
 
                 <div class="col-md-3">
                     <label for="fecha_inicio">Fecha de Registro</label>
-                    <input type="date" name="fecha_inicio" class="form-control" value="{{ request('fecha_inicio') }}">
+                    <input type="date" name="fecha_inicio" class="form-control"
+                        value="{{ request('fecha_inicio') }}">
                 </div>
 
                 <div class="col-md-3">
@@ -46,7 +48,8 @@
             </div>
 
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar Filtros</a>
+            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
+                Filtros</a>
         </form>
 
         <br>
@@ -116,7 +119,7 @@
                                             <tr>
                                                 <th>N° Orden</th>
                                                 <th>Código</th>
-                                                <th>Nombre Series/Subserie</th>
+                                                <th>Serie / Subserie</th>
                                                 <th>Fecha Inicial</th>
                                                 <th>Fecha Final</th>
                                                 <th>Caja</th>
@@ -136,7 +139,15 @@
                         <tr>
                             <td>{{ $detalle->numero_orden }}</td>
                             <td>{{ $detalle->codigo }}</td>
-                            <td>{{ $detalle->nombre_series_subserie }}</td>
+                            <td>
+                                @if ($detalle->subserie)
+                                    {{ $detalle->serie?->nombre }} / {{ $detalle->subserie?->nombre }}
+                                @elseif($detalle->serie)
+                                    <strong>{{ $detalle->serie?->nombre }}</strong>
+                                @else
+                                    <em>Sin serie asignada</em>
+                                @endif
+                            </td>
                             <td>{{ $detalle->fecha_inicial }}</td>
                             <td>{{ $detalle->fecha_final }}</td>
                             <td>{{ $detalle->caja }}</td>
