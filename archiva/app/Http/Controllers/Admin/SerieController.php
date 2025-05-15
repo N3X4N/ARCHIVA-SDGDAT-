@@ -69,7 +69,7 @@ class SerieController extends Controller
     {
         $data = $request->validate([
             'serie_padre_id'           => ['nullable', 'exists:series_documentales,id'],
-            'codigo'                   => ['required', 'string', 'max:20', 'unique:series_documentales,codigo'],
+            'codigo'                   => ['required','string','max:20'],
             'nombre'                   => ['required', 'string', 'max:150', 'unique:series_documentales,nombre'],
             'observaciones'            => ['nullable', 'string'],
             'is_active'                => ['required', 'boolean'],
@@ -136,7 +136,7 @@ class SerieController extends Controller
         // Actualiza todos los campos del modelo de una vez (no dará error unique si no cambian)
         $series->update([
             'serie_padre_id' => $data['serie_padre_id'] ?? null,
-            'codigo'         => $data['codigo'],
+            'codigo'         => ['required','string','max:20'],
             'nombre'         => $data['nombre'],
             'observaciones'  => $data['observaciones']  ?? null,
             'is_active'      => $data['is_active'],

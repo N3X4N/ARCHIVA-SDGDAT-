@@ -50,4 +50,10 @@ class SerieDocumental extends Model
             'tipo_documental_id'
         )->withTimestamps();
     }
+
+
+    public function detallesTransferencias()
+    {
+        return $this->hasMany(DetallesTransferenciaDocumental::class, 'serie_documental_id');
+    }
 }
