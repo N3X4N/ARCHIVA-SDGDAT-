@@ -17,6 +17,8 @@ use App\Http\Controllers\Admin\SoporteController;
 use App\Http\Controllers\Admin\UbicacionController;
 use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
 use App\Http\Controllers\Admin\AdminController;  // Asegúrate de que AdminController esté importado
+use App\Http\Controllers\Inventarios\TipoDocumentalController;
+
 
 Route::get('/', fn() => view('auth.login'));
 //php artisan serve --host=0.0.0.0 --port=8000
@@ -70,20 +72,17 @@ Route::prefix('inventarios')
     ->name('inventarios.')
     ->middleware(['auth', 'role:admin'])
     ->group(function () {
-        Route::resource('transferencias', TransferenciaDocumentalController::class);
-    });
-
-Route::get(
-    'inventarios/transferencias/{transferencia}/edit',
-    [TransferenciaDocumentalController::class, 'edit']
-)
-    ->name('inventarios.transferencias.edit');
-
-
-Route::prefix('inventarios')
-    ->name('inventarios.')
-    ->middleware(['auth', 'role:admin'])
-    ->group(function () {
-        // Ruta para Dependencias
+        // Dependencias
         Route::resource('dependencias', DependenciaController::class);
+
+        // Transferencias
+        Route::resource('transferencias', TransferenciaDocumentalController::class);
+
+        // Series + Subseries anidado
+        Route::resource('series', SerieController::class);
+        Route::resource('series.subseries', SubserieController::class);
+
+        // Tipos Documentales
+        Route::resource('tipos-documentales', TipoDocumentalController::class)
+            ->parameters(['tipos-documentales' => 'tipo_documental']);
     });

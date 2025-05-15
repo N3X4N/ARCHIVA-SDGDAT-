@@ -18,11 +18,13 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             UsersSeeder::class,
             DependenciaSeeder::class,
+            TipoDocumentalSeeder::class,
             SerieDocumentalSeeder::class,
             SubserieDocumentalSeeder::class,
             UbicacionSeeder::class,
             SoporteSeeder::class,
             TransferenciaDocumentalSeeder::class,
+            DetallesTransferenciasDocumentalesSeeder::class,
         ]);
     }
 }
