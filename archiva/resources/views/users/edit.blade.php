@@ -1,17 +1,24 @@
 <!-- resources/views/admin/users/edit.blade.php -->
 <x-admin-layout>
-    <x-slot name="title">Editar Usuario</x-slot>
+    <x-slot name="title">Editar Usuario - {{ $user->name }}</x-slot>
 
     <div class="container">
-      <h1>Editar Usuario #{{ $user->id }}</h1>
+        <!-- Título con el nombre del usuario -->
+        <h1>Editar Usuario: {{ $user->name }}</h1>
 
-      <form action="{{ route('admin.users.update', $user) }}" method="POST">
-        @csrf @method('PUT')
+        <!-- Formulario de actualización de usuario -->
+        <form action="{{ route('admin.users.update', $user) }}" method="POST">
+            @csrf
+            @method('PUT')
 
-        @include('users._form', compact('user','roles'))
+            <!-- Inclusión del formulario de usuario -->
+            @include('users._form', compact('user', 'roles'))
 
-        <button class="btn btn-success">Actualizar</button>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
-      </form>
+            <!-- Botones de acción -->
+
+            <button class="btn btn-success">Actualizar</button>
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
+
+        </form>
     </div>
-  </x-admin-layout>
+</x-admin-layout>

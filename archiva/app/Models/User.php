@@ -22,6 +22,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'is_active',
+        'dependencia_id',
     ];
 
     /**
@@ -46,5 +47,30 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(\App\Models\Role::class);
+    }
+
+
+    /**
+     * Dependencia asignada al usuario (si aplica)
+     */
+    public function dependencia()
+    {
+        return $this->belongsTo(\App\Models\Dependencia::class);
+    }
+
+    /**
+     * Transferencias documentales hechas por este usuario
+     */
+    public function transferencias()
+    {
+        return $this->hasMany(\App\Models\TransferenciaDocumental::class, 'user_id');
+    }
+
+    /**
+     * Préstamos registrados por este usuario
+     */
+    public function prestamos()
+    {
+        return $this->hasMany(\App\Models\Prestamo::class, 'user_id');
     }
 }
