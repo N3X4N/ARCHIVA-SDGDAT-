@@ -7,10 +7,10 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Subseries de {{ $series->nombre }}</h1>
             <div>
-                <a href="{{ route('inventarios.series.subseries.index', ['series' => $series->id]) }}"
+                <a href="{{ route('inventarios.series.index', ['series' => $series->id]) }}"
                     class="btn btn-outline-secondary btn-sm">
-                     <i class="fa fa-arrow-left me-1"></i> Volver
-                 </a>
+                    <i class="fa fa-arrow-left me-1"></i> Volver
+                </a>
                 <a href="{{ route('inventarios.series.subseries.create', $series) }}" class="btn btn-success">
                     <i class="fa fa-plus me-1"></i> Nueva Subserie
                 </a>
@@ -68,6 +68,7 @@
                     <tr>
                         <th>Código</th>
                         <th>Nombre</th>
+                        <th>Dependencias</th>
                         <th>Estado</th>
                         <th style="width:180px">Acciones</th>
                     </tr>
@@ -77,6 +78,11 @@
                         <tr>
                             <td>{{ $sub->codigo }}</td>
                             <td>{{ $sub->nombre }}</td>
+                            <td>
+                                @foreach ($sub->dependencias as $dep)
+                                    <span class="badge bg-secondary">{{ $dep->sigla }}</span>
+                                @endforeach
+                            </td>
                             <td>
                                 @if ($sub->is_active)
                                     <i class="fa fa-check-circle text-success"></i> Activo

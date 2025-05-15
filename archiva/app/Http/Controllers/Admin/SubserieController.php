@@ -7,6 +7,7 @@ use App\Models\SubserieDocumental;
 use App\Models\SerieDocumental;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\Dependencia;
 
 class SubserieController extends Controller
 {
@@ -40,26 +41,14 @@ class SubserieController extends Controller
      */
     public function create(SerieDocumental $series)
     {
-        // Cuenta cuántas subseries ya hay
-        $count = $series->subseries()->count();
+        $dependencias  = Dependencia::active()->pluck('nombre', 'id');
+        $seleccionadas = [];
 
-        // El siguiente número
-        $next = $count + 1;
-
-        // 3 dígitos con ceros a la izquierda
-        $suffix = str_pad($next, 3, '0', STR_PAD_LEFT);
-
-        // Prefijo + guión + secuencia
-        $defaultCode = "{$series->codigo}-{$suffix}";
-
-        // Creamos un nuevo modelo con el código por defecto
-        $subserie = new SubserieDocumental();
-        $subserie->codigo = $defaultCode;
-
-        return view(
-            'inventarios.series.subseries.create',
-            compact('series', 'subserie')
-        );
+        return view('inventarios.series.subseries.create', compact(
+            'series',
+            'dependencias',
+            'seleccionadas'
+        ));
     }
 
     /**
@@ -67,44 +56,34 @@ class SubserieController extends Controller
      */
     public function store(Request $request, SerieDocumental $series)
     {
-        // 1) Validamos sufijo y nombre sin tocar el DB todavía
         $data = $request->validate([
-            'suffix'    => ['required', 'digits:3'],
-            'nombre'    => ['required', 'string', 'max:150'],
-            'is_active' => ['required', 'boolean'],
-        ]);
-
-        // 2) Construimos el código completo
-        $fullCode = "{$series->codigo}-{$data['suffix']}";
-
-        // 3) Validamos duplicados **sobre el código completo** y el nombre
-        $request->merge(['codigo' => $fullCode]); // para poder usar Validator en el closure
-        $request->validate([
-            'codigo' => [
+            'codigo'            => [
+                'required',
+                'string',
+                'max:10',
                 Rule::unique('subseries_documentales', 'codigo')
-                    ->where(
-                        fn($q) => $q
-                            ->where('serie_documental_id', $series->id)
-                            ->where('codigo', $fullCode)
-                    )
+                    ->where('serie_documental_id', $series->id)
             ],
-            'nombre' => [
+            'nombre'           => [
+                'required',
+                'string',
+                'max:150',
                 Rule::unique('subseries_documentales', 'nombre')
-                    ->where(
-                        fn($q) => $q
-                            ->where('serie_documental_id', $series->id)
-                            ->where('nombre', $data['nombre'])
-                    )
+                    ->where('serie_documental_id', $series->id)
             ],
+            'is_active'         => ['required', 'boolean'],
+            'dependencias_ids'  => ['required', 'array', 'min:1'],
+            'dependencias_ids.*' => ['exists:dependencias,id'],
         ]);
 
-        // 4) Guardamos
-        SubserieDocumental::create([
+        $subserie = SubserieDocumental::create([
             'serie_documental_id' => $series->id,
-            'codigo'              => $fullCode,
+            'codigo'              => $data['codigo'],
             'nombre'              => $data['nombre'],
             'is_active'           => $data['is_active'],
         ]);
+
+        $subserie->dependencias()->sync($data['dependencias_ids']);
 
         return redirect()
             ->route('inventarios.series.subseries.index', $series)
@@ -117,53 +96,41 @@ class SubserieController extends Controller
      */
     public function edit(SerieDocumental $series, SubserieDocumental $subseries)
     {
-        return view(
-            'inventarios.series.subseries.edit',
-            compact('series', 'subseries')
-        );
+        $dependencias  = Dependencia::active()->pluck('nombre', 'id');
+        $seleccionadas = $subseries->dependencias->pluck('id')->toArray();
+
+        return view('inventarios.series.subseries.edit', compact(
+            'series',
+            'subseries',
+            'dependencias',
+            'seleccionadas'
+        ));
     }
 
-    public function update(Request $request, SerieDocumental $series, SubserieDocumental $subseries)
+    public function update(Request $request, SerieDocumental $series, SubserieDocumental $subserie)
     {
-        // 1) Validamos sufijo y nombre base
         $data = $request->validate([
-            'suffix'    => ['required', 'digits:3'],
-            'nombre'    => ['required', 'string', 'max:150'],
-            'is_active' => ['required', 'boolean'],
-        ]);
-
-        // 2) Rehacemos el código entero
-        $fullCode = "{$series->codigo}-{$data['suffix']}";
-
-        // 3) Validamos unicidad, ignorando este mismo registro
-        $request->merge(['codigo' => $fullCode]);
-        $request->validate([
-            'codigo' => [
+            'codigo'            => [
+                'required',
+                'string',
+                'max:10',
                 Rule::unique('subseries_documentales', 'codigo')
-                    ->where(
-                        fn($q) => $q
-                            ->where('serie_documental_id', $series->id)
-                            ->where('codigo', $fullCode)
-                    )
-                    ->ignore($subseries->id)
+                    ->where('serie_documental_id', $series->id)
+                    ->ignore($subserie->id)
             ],
-            'nombre' => [
-                Rule::unique('subseries_documentales', 'nombre')
-                    ->where(
-                        fn($q) => $q
-                            ->where('serie_documental_id', $series->id)
-                            ->where('nombre', $data['nombre'])
-                    )
-                    ->ignore($subseries->id)
-            ],
+            'nombre'            => ['required', 'string', 'max:150'],
+            'is_active'         => ['required', 'boolean'],
+            'dependencias_ids'  => ['required', 'array', 'min:1'],
+            'dependencias_ids.*' => ['exists:dependencias,id'],
         ]);
 
-        // 4) Actualizamos
-        $subseries->update([
-            'codigo'    => $fullCode,
+        $subserie->update([
+            'codigo'    => $data['codigo'],
             'nombre'    => $data['nombre'],
             'is_active' => $data['is_active'],
         ]);
+
+        $subserie->dependencias()->sync($data['dependencias_ids']);
 
         return redirect()
             ->route('inventarios.series.subseries.index', $series)
@@ -176,6 +143,10 @@ class SubserieController extends Controller
      */
     public function destroy(SerieDocumental $series, SubserieDocumental $subserie)
     {
+        // (Opcional) limpiar la tabla pivote
+        $subserie->dependencias()->detach();
+
+        // Soft-delete: marca deleted_at, no borra físicamente
         $subserie->delete();
 
         return redirect()

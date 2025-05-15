@@ -13,16 +13,11 @@
 @endphp
 
 <div class="mb-3">
-    <label for="suffix" class="form-label">Código de Subserie</label>
-    <div class="input-group">
-        {{-- Prefijo fijo --}}
-        <span class="input-group-text">{{ $series->codigo }}-</span>
-        {{-- Sufijo editable --}}
-        <input type="text" id="suffix" name="suffix" class="form-control" placeholder="001"
-            value="{{ $currentSuffix }}">
-    </div>
-    @error('suffix')
-        <div class="text-danger">{{ $message }}</div>
+    <label for="codigo" class="form-label">Código de Subserie</label>
+    <input type="text" id="codigo" name="codigo" class="form-control @error('codigo') is-invalid @enderror"
+        value="{{ old('codigo', $subseries->codigo ?? '') }}">
+    @error('codigo')
+        <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
 
@@ -32,6 +27,21 @@
         value="{{ old('nombre', $subseries->nombre ?? '') }}">
     @error('nombre')
         <div class="text-danger">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="mb-3">
+    <label for="dependencias_ids" class="form-label">Dependencias productoras</label>
+    <select name="dependencias_ids[]" id="dependencias_ids"
+        class="form-select @error('dependencias_ids') is-invalid @enderror" multiple>
+        @foreach ($dependencias as $id => $nom)
+            <option value="{{ $id }}"
+                {{ in_array($id, old('dependencias_ids', $seleccionadas)) ? 'selected' : '' }}>{{ $nom }}
+            </option>
+        @endforeach
+    </select>
+    @error('dependencias_ids')
+        <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
 

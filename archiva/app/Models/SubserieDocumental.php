@@ -23,4 +23,19 @@ class SubserieDocumental extends Model
     {
         return $this->belongsTo(SerieDocumental::class, 'serie_documental_id');
     }
+
+    public function detallesTransferencias()
+    {
+        return $this->hasMany(DetallesTransferenciaDocumental::class, 'subserie_documental_id');
+    }
+
+    public function dependencias()
+    {
+        return $this->belongsToMany(
+            \App\Models\Dependencia::class,
+            'dependencia_subserie',
+            'subserie_documental_id',
+            'dependencia_id'
+        );
+    }
 }
