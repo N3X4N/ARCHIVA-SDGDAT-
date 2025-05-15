@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained('series_documentales')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
-            $table->string('codigo', 20)->unique();
+            $table->string('codigo', 20);
             $table->string('nombre', 150)->unique();
             $table->text('observaciones')->nullable();
             $table->boolean('is_active')->default(true);
