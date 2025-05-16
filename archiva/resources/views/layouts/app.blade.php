@@ -17,6 +17,8 @@
 
     <!-- Tus estilos / Vite (si importas Bootstrap ahí, comenta el CDN) -->
     {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
+    <!-- tu CSS/app.css o mix(...) aquí -->
+    @stack('styles')
 </head>
 
 <body>
