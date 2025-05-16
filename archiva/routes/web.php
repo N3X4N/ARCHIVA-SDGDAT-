@@ -15,9 +15,9 @@ use App\Http\Controllers\Admin\SerieController;
 use App\Http\Controllers\Admin\SubserieController;
 use App\Http\Controllers\Admin\SoporteController;
 use App\Http\Controllers\Admin\UbicacionController;
-use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
-use App\Http\Controllers\Admin\AdminController;  // Asegúrate de que AdminController esté importado
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Inventarios\TipoDocumentalController;
+use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
 
 
 Route::get('/', fn() => view('auth.login'));
@@ -85,4 +85,8 @@ Route::prefix('inventarios')
         // Tipos Documentales
         Route::resource('tipos-documentales', TipoDocumentalController::class)
             ->parameters(['tipos-documentales' => 'tipo_documental']);
+
+        Route::resource('ubicaciones', UbicacionController::class)
+            ->parameters(['ubicaciones' => 'ubicacion'])
+            ->except(['show']);
     });

@@ -2,11 +2,12 @@
     <x-slot name="title">Inventario Documental</x-slot>
 
     <div class="container-fluid">
-        <h1 class="mb-4">Inventario Documental</h1>
-
-        <a href="{{ route('inventarios.transferencias.create') }}" class="btn btn-success mb-3">
-            Nueva Transferencia
-        </a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Lista de Transferencias</h1>
+            <a href="{{ route('inventarios.transferencias.create') }}" class="btn btn-success">
+                <i class="fa fa-plus me-1"></i> Nueva Transferencia
+            </a>
+        </div>
 
         <form method="GET" action="{{ route('inventarios.transferencias.index') }}">
             <div class="row">

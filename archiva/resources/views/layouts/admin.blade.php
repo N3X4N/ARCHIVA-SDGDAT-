@@ -145,6 +145,14 @@
                 @endif
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
+                    <a href="{{ route('inventarios.ubicaciones.index') }}"
+                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/ubicaciones*') ? 'active' : '' }}">
+                        <i class="fas fa-map-marker-alt me-3"></i>
+                        <span class="hide-on-collapse">Ubicaciones</span>
+                    </a>
+                @endif
+
+                @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
                     {{-- Link a Series Documentales --}}
                     <a href="{{ route('inventarios.series.index') }}"
                         class="nav-link d-flex align-items-center p-3 {{ request()->routeIs('inventarios.series.*') ? 'active' : '' }}">
