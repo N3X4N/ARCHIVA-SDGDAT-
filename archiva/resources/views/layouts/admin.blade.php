@@ -12,62 +12,9 @@
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- css para el sidebar -->
+    <link href="{{ asset('css/admin.css') }}" rel="stylesheet">
 
-    <style>
-        /* Sidebar styles */
-        .sidebar {
-            height: 100vh;
-            position: fixed;
-            top: 56px;
-            /* Altura navbar */
-            left: 0;
-            width: 220px;
-            background-color: #2E5077;
-            color: #fff;
-            transition: width 0.3s;
-            overflow: hidden;
-        }
-
-        .sidebar.collapsed {
-            width: 60px;
-        }
-
-        .sidebar .nav-link {
-            color: #fff;
-        }
-
-        .sidebar .nav-link.active,
-        .sidebar .nav-link:hover {
-            background-color: #1f3e63;
-        }
-
-        .hide-on-collapse {
-            transition: opacity 0.3s;
-        }
-
-        .sidebar.collapsed .hide-on-collapse {
-            opacity: 0;
-        }
-
-        .toggle-btn {
-            background: none;
-            border: none;
-            color: #fff;
-            width: 100%;
-            text-align: right;
-            padding: 0.5rem;
-        }
-
-        .content {
-            margin-left: 220px;
-            padding: 70px 20px 20px;
-            transition: margin-left 0.3s;
-        }
-
-        .sidebar.collapsed~.content {
-            margin-left: 60px;
-        }
-    </style>
 </head>
 
 <body>
@@ -100,14 +47,18 @@
         </div>
     </nav>
 
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <nav class="sidebar d-flex flex-column flex-shrink-0">
-            <button class="toggle-btn" onclick="toggleSidebar()">
-                <i class="fas fa-chevron-left"></i>
+   <div class="d-flex">
+        <!-- Botón para colapsar/expandir sidebar -->
+        <div class="position-fixed" style="z-index: 1040; left: 0.5rem; top: 4rem;">
+            <button id="sidebarToggle" class="btn btn-outline-secondary">
+                <i class="fas fa-bars"></i>
             </button>
+        </div>
 
-            <div class="nav flex-column mt-2">
+        <!-- Sidebar modificado -->
+        <nav id="sidebarMenu" class="sidebar bg-light border-end">
+            
+            <div class="nav flex-column mt-5">
                 <a href="{{ url('/home') }}"
                     class="nav-link d-flex align-items-center p-3 {{ request()->is('home') ? 'active' : '' }}">
                     <i class="fas fa-home me-3"></i>
@@ -161,9 +112,9 @@
             </div>
         </nav>
 
-        <!-- Contenido Principal -->
-        <main class="content flex-fill">
-            <div class="container-fluid">
+           <!-- Contenido Principal -->
+        <main class="main-content">
+            <div class="container-fluid mt-4">
                 {{ $slot }}
             </div>
         </main>
@@ -178,17 +129,11 @@
 
     <!-- Feather Icons (opcional) -->
     <script src="https://unpkg.com/feather-icons"></script>
-    <script>
-        feather.replace();
+    
+    <!-- js para el sidebar -->
+    <script src="{{ asset('js/admin.js') }}"></script>
+    
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const icon = sidebar.querySelector('.toggle-btn i');
-            sidebar.classList.toggle('collapsed');
-            icon.classList.toggle('fa-chevron-right');
-            icon.classList.toggle('fa-chevron-left');
-        }
-    </script>
 
     @stack('scripts')
 </body>
