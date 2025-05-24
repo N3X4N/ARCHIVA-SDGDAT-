@@ -46,11 +46,12 @@ return new class extends Migration
             $table->integer('tomo')->nullable();  // Número de tomo
             $table->integer('otro')->nullable();  // Otro campo adicional
             $table->integer('numero_folios')->nullable();  // Número de folios
-            $table->string('soporte')->nullable();  // Tipo de soporte (papel, digital, etc.)
+            $table->foreignId('soporte_id')
+                ->nullable()
+                ->constrained('soportes')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();  // Tipo de soporte (papel, digital, etc.)
             $table->string('frecuencia_consulta')->nullable();  // Frecuencia de consulta
-            $table->string('ubicacion_caja')->nullable();  // Ubicación de la caja
-            $table->string('ubicacion_bandeja')->nullable();  // Ubicación de la bandeja
-            $table->string('ubicacion_estante')->nullable();  // Ubicación del estante
             $table->text('observaciones')->nullable();  // Observaciones adicionales
             $table->string('estado_flujo', 30)->default('Activo'); // Estado de flujo, por defecto 'ingreso'
             $table->timestamps();  // Timestamps (created_at, updated_at)
