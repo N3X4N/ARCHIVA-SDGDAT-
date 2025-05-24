@@ -11,13 +11,42 @@
 
         <form method="GET" action="{{ route('inventarios.transferencias.index') }}">
             <div class="row">
+                {{-- Filtro Entidad Remitente --}}
                 <div class="col-md-3">
-                    <label for="dependencia_id">Dependencia</label>
-                    <select name="dependencia_id" class="form-control">
+                    <label for="entidad_remitente_id">Entidad Remitente</label>
+                    <select name="entidad_remitente_id" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach ($dependencias as $id => $nombre)
                             <option value="{{ $id }}"
-                                {{ request('dependencia_id') == $id ? 'selected' : '' }}>
+                                {{ request('entidad_remitente_id') == $id ? 'selected' : '' }}>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filtro Entidad Productora --}}
+                <div class="col-md-3">
+                    <label for="entidad_productora_id">Entidad Productora</label>
+                    <select name="entidad_productora_id" class="form-control">
+                        <option value="">Seleccione...</option>
+                        @foreach ($dependencias as $id => $nombre)
+                            <option value="{{ $id }}"
+                                {{ request('entidad_productora_id') == $id ? 'selected' : '' }}>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filtro Oficina Productora --}}
+                <div class="col-md-3">
+                    <label for="oficina_productora_id">Oficina Productora</label>
+                    <select name="oficina_productora_id" class="form-control">
+                        <option value="">Seleccione...</option>
+                        @foreach ($dependencias as $id => $nombre)
+                            <option value="{{ $id }}"
+                                {{ request('oficina_productora_id') == $id ? 'selected' : '' }}>
                                 {{ $nombre }}
                             </option>
                         @endforeach
@@ -29,7 +58,8 @@
                     <select name="estado_flujo" class="form-control">
                         <option value="">Seleccione...</option>
                         @foreach ($estados as $key => $estado)
-                            <option value="{{ $key }}" {{ request('estado_flujo') == $key ? 'selected' : '' }}>
+                            <option value="{{ $key }}"
+                                {{ request('estado_flujo') == $key ? 'selected' : '' }}>
                                 {{ $estado }}
                             </option>
                         @endforeach
@@ -78,6 +108,7 @@
                     <th>Registro de Entrada</th>
                     <th>Objeto</th>
                     <th>Estado</th>
+                    <th>Aprobaciones</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -85,13 +116,73 @@
                 @foreach ($transferencias as $t)
                     <tr>
                         <td style="font-size: 0.8em;">{{ $t->id }}</td>
-                        <td>{{ $t->entidad_productora }}</td>
-                        <td>{{ $t->entidad_productora }}</td>
+                        <td>{{ $t->entidadRemitente->nombre ?? '—' }}</td>
+                        <td>{{ $t->entidadProductora->nombre ?? '—' }}</td>
                         <td>{{ $t->unidad_administrativa }}</td>
-                        <td>{{ $t->oficina_productora }}</td>
+                        <td>{{ $t->oficinaProductora->nombre ?? '—' }}</td>
                         <td>{{ \Carbon\Carbon::parse($t->registro_entrada)->format('Y-m-d') }}</td>
                         <td>{{ $t->objeto }}</td>
                         <td>{{ $t->estado_flujo }}</td>
+                        <td class="align-middle">
+                            <div class="d-flex flex-column gap-2">
+                                {{-- 1) Firmar Entregado (solo en ELABORADO) --}}
+                                @can('entregar', $t)
+                                    <form method="POST"
+                                        action="{{ route('inventarios.transferencias.firmar.entregado', $t) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-pen-nib me-1"></i> Firmar Entregado
+                                        </button>
+                                    </form>
+                                @endcan
+
+                                {{-- 2) Firmar Recibido (solo en ENTREGADO) --}}
+                                @can('recibir', $t)
+                                    <form method="POST"
+                                        action="{{ route('inventarios.transferencias.firmar.recibido', $t) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check-circle me-1"></i> Firmar Recibido
+                                        </button>
+                                    </form>
+                                @endcan
+
+                                {{-- 3) Archivar (solo en RECIBIDO) --}}
+                                @can('archivar', $t)
+                                    <form method="POST" action="{{ route('inventarios.transferencias.archivar', $t) }}">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-archive me-1"></i> Archivar
+                                        </button>
+                                    </form>
+                                @endcan
+
+                                {{-- 4) Historial de firmas --}}
+                                @if ($t->elaborado_por)
+                                    <small class="text-muted mb-0">
+                                        Elaborado por {{ $t->elaboradoBy->name }}
+                                        ({{ $t->elaborado_fecha->format('d/m/Y H:i') }})
+                                    </small>
+                                @endif
+                                @if ($t->entregado_por)
+                                    <small class="text-muted mb-0">
+                                        Entregado por {{ $t->entregadoBy->name }}
+                                        ({{ $t->entregado_fecha->format('d/m/Y H:i') }})
+                                    </small>
+                                @endif
+                                @if ($t->recibido_por)
+                                    <small class="text-muted mb-0">
+                                        Recibido por {{ $t->recibidoBy->name }}
+                                        ({{ $t->recibido_fecha->format('d/m/Y H:i') }})
+                                    </small>
+                                @endif
+
+                                {{-- 5) Badge final si ya está archivado --}}
+                                @if ($t->estado_flujo === 'ARCHIVADO')
+                                    <span class="badge bg-success mt-2">✔ Completo</span>
+                                @endif
+                            </div>
+                        </td>
                         <td>
                             <!-- Buttons with icons properly aligned -->
                             <div class="d-flex">
@@ -126,7 +217,6 @@
                                                 <th>Caja</th>
                                                 <th>Carpeta</th>
                                                 <th>Resolución</th>
-                                                <th>Otro</th>
                                                 <th>N° Folios</th>
                                                 <th>Soporte</th>
                                                 <th>Frecuencia de Consulta</th>
@@ -142,9 +232,11 @@
                             <td>{{ $detalle->codigo }}</td>
                             <td>
                                 @if ($detalle->subserie)
-                                    {{ $detalle->serie?->nombre }} / {{ $detalle->subserie?->nombre }}
-                                @elseif($detalle->serie)
-                                    <strong>{{ $detalle->serie?->nombre }}</strong>
+                                    {{-- Si tiene subserie, muestro **solo** la subserie --}}
+                                    {{ $detalle->subserie->nombre }}
+                                @elseif ($detalle->serie)
+                                    {{-- Si no, muestro la serie en negrita --}}
+                                    <strong>{{ $detalle->serie->nombre }}</strong>
                                 @else
                                     <em>Sin serie asignada</em>
                                 @endif
@@ -154,11 +246,20 @@
                             <td>{{ $detalle->caja }}</td>
                             <td>{{ $detalle->carpeta }}</td>
                             <td>{{ $detalle->resolucion }}</td>
-                            <td>{{ $detalle->otro }}</td>
                             <td>{{ $detalle->numero_folios }}</td>
-                            <td>{{ $detalle->soporte }}</td>
+                            <td>{{ optional($detalle->soporte)->nombre }}</td>
                             <td>{{ $detalle->frecuencia_consulta }}</td>
-                            <td>{{ $detalle->ubicacion_caja . ' - ' . $detalle->ubicacion_bandeja . ' - ' . $detalle->ubicacion_estante }}
+                            <td>
+                                @if ($detalle->ubicacion)
+                                    {{-- Asumo que tu relación es detalle->ubicacion --}}
+                                    Estante: {{ $detalle->ubicacion->estante }} |
+                                    Bandeja: {{ $detalle->ubicacion->bandeja }} |
+                                    Caja: {{ $detalle->ubicacion->caja }} |
+                                    Carpeta: {{ $detalle->ubicacion->carpeta }} |
+                                    Otro: {{ $detalle->ubicacion->otro }}
+                                @else
+                                    – –
+                                @endif
                             </td>
                             <td>{{ $detalle->observaciones }}</td>
                             <td>{{ $detalle->estado_flujo }}</td>

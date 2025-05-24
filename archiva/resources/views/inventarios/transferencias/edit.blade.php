@@ -1,20 +1,24 @@
-{{-- resources/views/inventarios/transferencias/edit.blade.php --}}
 <x-admin-layout>
-    <x-slot name="title">Editar Transferencia Documental</x-slot>
+    <x-slot name="title">Editar Transferencia #{{ $transferencia->id }}</x-slot>
 
-    <div class="container">
-        <h1 class="mb-4">Editar Transferencia #{{ $transferencia->numero_transferencia }}</h1>
+    <div class="container-fluid">
+        <h1>Editar Transferencia #{{ $transferencia->id }}</h1>
 
-        <form action="{{ route('inventarios.transferencias.update', $transferencia) }}" method="POST">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <form method="POST" action="{{ route('inventarios.transferencias.update', $transferencia) }}">
             @csrf
-            @method('PUT')  {{-- ← Importante --}}
-            @include('inventarios.transferencias._form', [
-                'transferencia'      => $transferencia,
-                'nextTransferNumber' => $transferencia->numero_transferencia, // para que el input siga readonly
-            ])
+            @method('PUT')
 
-            <button type="submit" class="btn btn-success">Actualizar</button>
-            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary">Cancelar</a>
+            @include('inventarios.transferencias._form')
+
         </form>
     </div>
 </x-admin-layout>
