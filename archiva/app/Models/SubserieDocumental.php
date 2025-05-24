@@ -19,6 +19,11 @@ class SubserieDocumental extends Model
         'is_active',
     ];
 
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
     public function serie()
     {
         return $this->belongsTo(SerieDocumental::class, 'serie_documental_id');
