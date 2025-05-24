@@ -17,6 +17,8 @@
 
     <!-- Tus estilos / Vite (si importas Bootstrap ahí, comenta el CDN) -->
     {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
+    <!-- tu CSS/app.css o mix(...) aquí -->
+    @stack('styles')
 </head>
 
 <body>
@@ -96,7 +98,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-PLACE_YOUR_INTEGRITY_HASH_HERE" crossorigin="anonymous"></script>
 
+    <x-alert-modal />
     @stack('scripts')
+    <script src="{{ asset('js/transferencias.js') }}" defer></script>
 </body>
 
 </html>

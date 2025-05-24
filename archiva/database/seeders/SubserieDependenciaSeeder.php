@@ -13,9 +13,10 @@ class SubserieDependenciaSeeder extends Seeder
     {
         // Mapa: código de subserie => array de siglas de dependencias
         $map = [
-            '01-01'        => ['DA'], // Ajusta códigos y siglas según tu CCD
-            '01-02'        => ['DA'],
-            '01-03'        => ['DA', 'CI', 'SGSCC', 'PML', 'IP', 'CF', 'SSEDS', 'SDAAA', 'SDEYT', 'SGYPC'],
+            '01'        => ['DA'], // Ajusta códigos y siglas según tu CCD
+            '02'        => ['DA'],
+            '03'        => ['DA', 'CI', 'SGSCC', 'PML', 'IP', 'CF', 'SSEDS', 'SDAAA', 'SDEYT', 'SGYPC'],
+            '04'        => ['DA'],
             // … añade aquí todas las subseries y sus dependencias …
         ];
 

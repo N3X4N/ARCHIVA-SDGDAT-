@@ -19,6 +19,7 @@ class UsersSeeder extends Seeder
     {
         $adminRole     = Role::firstOrCreate(['nombre_rol' => 'admin']);
         $archivistaRole = Role::firstOrCreate(['nombre_rol' => 'archivista']);
+        $solicitanteRole = Role::firstOrCreate(['nombre_rol' => 'solicitante']);
 
         // Usuario administrador
         User::updateOrCreate(
@@ -38,6 +39,16 @@ class UsersSeeder extends Seeder
                 'name'       => 'Archivista',
                 'password'   => Hash::make('Secret123!'),
                 'role_id'    => $archivistaRole->id,
+                'is_active'  => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'solicitante@archivo.local'],
+            [
+                'name'       => 'solicitante',
+                'password'   => Hash::make('Secret1544!'),
+                'role_id'    => $solicitanteRole->id,
                 'is_active'  => true,
             ]
         );

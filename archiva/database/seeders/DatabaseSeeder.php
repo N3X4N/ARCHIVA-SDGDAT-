@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             TipoDocumentalSeeder::class,
             SerieDocumentalSeeder::class,
             SubserieDocumentalSeeder::class,
+            SubserieDependenciaSeeder::class,
             UbicacionSeeder::class,
             SoporteSeeder::class,
             TransferenciaDocumentalSeeder::class,
