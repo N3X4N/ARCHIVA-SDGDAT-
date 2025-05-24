@@ -13,11 +13,11 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\DependenciaController;
 use App\Http\Controllers\Admin\SerieController;
 use App\Http\Controllers\Admin\SubserieController;
-use App\Http\Controllers\Admin\SoporteController;
 use App\Http\Controllers\Admin\UbicacionController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Inventarios\TipoDocumentalController;
 use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
+use App\Http\Controllers\Inventarios\SoporteController;
 
 
 Route::get('/', fn() => view('auth.login'));
@@ -42,9 +42,7 @@ Route::prefix('admin')
         Route::resource('soportes', SoporteController::class);
         Route::resource('ubicaciones', UbicacionController::class);
         Route::resource('transferencias', TransferenciaDocumentalController::class);
-
-        // Ruta de configuración
-        Route::get('settings', [AdminController::class, 'settings'])->name('settings');  // Ruta para configuración
+        // Ruta para configuración
     });
 
 // Rutas accesibles para cualquier usuario autenticado
@@ -78,6 +76,27 @@ Route::prefix('inventarios')
         // Transferencias
         Route::resource('transferencias', TransferenciaDocumentalController::class);
 
+        Route::patch(
+            'transferencias/{t}/firmar-entregado',
+            [TransferenciaDocumentalController::class, 'firmarEntregado']
+        )
+            ->name('transferencias.firmar.entregado')
+            ->middleware('auth');
+
+        Route::patch(
+            'transferencias/{t}/firmar-recibido',
+            [TransferenciaDocumentalController::class, 'firmarRecibido']
+        )
+            ->name('transferencias.firmar.recibido')
+            ->middleware('auth');
+
+        Route::patch(
+            'transferencias/{t}/archivar',
+            [TransferenciaDocumentalController::class, 'archivar']
+        )
+            ->name('transferencias.archivar')
+            ->middleware('auth');
+
         // Series + Subseries anidado
         Route::resource('series', SerieController::class);
         Route::resource('series.subseries', SubserieController::class);
@@ -88,5 +107,8 @@ Route::prefix('inventarios')
 
         Route::resource('ubicaciones', UbicacionController::class)
             ->parameters(['ubicaciones' => 'ubicacion'])
+            ->except(['show']);
+
+        Route::resource('soportes', SoporteController::class)
             ->except(['show']);
     });
