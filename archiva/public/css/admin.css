@@ -45,3 +45,27 @@
     margin-top: 1rem;
     border-left: 3px solid #0d6efd;
 }
+
+/* cel*/
+@media (min-width: 768px) {
+    .sidebar {
+        width: 250px;
+    }
+    .sidebar.collapsed {
+        width: 60px;
+    }
+}
+
+/* Para evitar que el sidebar tape el contenido en cel */
+@media (max-width: 767px) {
+    .sidebar {
+        width: 0;
+    }
+    .sidebar.show {
+        width: 250px;
+    }
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+}

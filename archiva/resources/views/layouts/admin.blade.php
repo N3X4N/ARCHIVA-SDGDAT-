@@ -55,7 +55,7 @@
             </button>
         </div>
 
-        <!-- Sidebar modificado -->
+        <!-- Sidebar -->
         <nav id="sidebarMenu" class="sidebar bg-light border-end">
             
             <div class="nav flex-column mt-5">
