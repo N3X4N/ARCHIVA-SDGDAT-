@@ -24,4 +24,30 @@ document.addEventListener('DOMContentLoaded', function() {
             // Lógica de edición aquí
         });
     });
+
+     //  función para cerrar al hacer clic fuera
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebarMenu');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const isExpanded = !sidebar.classList.contains('collapsed');
+        
+        // Elementos que no deben cerrar el sidebar
+        const isClickInside = sidebar.contains(event.target) || 
+                            sidebarToggle.contains(event.target);
+        
+        if (!isClickInside && isExpanded && window.innerWidth > 768) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('collapsed');
+            localStorage.setItem('sidebarCollapsed', true);
+        }
+    });
+
+    // maneja el responsive
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('collapsed');
+            localStorage.setItem('sidebarCollapsed', true);
+        }
+    });
 });
