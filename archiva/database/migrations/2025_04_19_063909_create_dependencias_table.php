@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
             $table->string('sigla',10)->unique();
             $table->string('codigo', 20)->unique();
-            $table->string('nombre', 150);
+            $table->string('nombre', 150)->unique();
             $table->boolean('is_active')->default(true);
             $table->softDeletesTz();
         });

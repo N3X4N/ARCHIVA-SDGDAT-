@@ -27,6 +27,8 @@ return new class extends Migration
 
             // Evita duplicar código dentro de la misma serie
             $table->unique(['serie_documental_id', 'codigo']);
+            // Evita duplicar nombre dentro de la misma serie
+            $table->unique(['serie_documental_id', 'nombre']);
         });
     }
 

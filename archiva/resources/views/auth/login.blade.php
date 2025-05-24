@@ -71,11 +71,16 @@
                                         <div class="text-center pt-1 mb-5 pb-1">
                                             <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3"
                                                 type="submit">Iniciar sesión</button>
-                                            @if (Route::has('password.request'))
-                                                <a class="text-muted" href="{{ route('password.request') }}">¿Olvidaste
-                                                    tu contraseña?</a>
-                                            @endif
+                                            <div class="d-flex align-items-center justify-content-center pb-4">
+                                                @if (Route::has('password.request'))
+                                                    <a class="text-muted"
+                                                        href="{{ route('password.request') }}">¿Olvidaste
+                                                        tu contraseña?</a>
+                                                @endif
+                                            </div>
                                         </div>
+
+
 
                                         <div class="d-flex align-items-center justify-content-center pb-4">
                                             <p class="mb-0 me-2">¿No tienes una cuenta?</p>
@@ -92,7 +97,8 @@
                                     <h4 class="mb-4">Alcaldía de Tabio</h4>
                                     <p class="small mb-0">El sistema de gestión documental para la Alcaldía de Tábio es
                                         una solución tecnológica diseñada para optimizar la administración de documentos
-                                        y trámites administrativos. Este sistema permite almacenar fisicamente control , estados y
+                                        y trámites administrativos. Este sistema permite almacenar fisicamente control ,
+                                        estados y
                                         gestionar eficientemente documentos oficiales, facilitando su
                                         acceso y consulta de manera rápida y segura. Además, contribuye a la mejora en
                                         la transparencia, la trazabilidad de los procesos y la reducción del uso de
