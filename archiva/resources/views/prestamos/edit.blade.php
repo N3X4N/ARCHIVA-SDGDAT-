@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="title">Editar Préstamo #{{ $prestamo->id }}</x-slot>
 
-    <div class="container-fluid"> {{-- O solo .container --}}
+    <div class="container-fluid">
         <h1 class="mb-4">Editar Préstamo #{{ $prestamo->id }}</h1>
 
         @if ($errors->any())
@@ -23,7 +23,7 @@
             ])
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-primary"> {{-- Cambiado a btn-primary para actualizar --}}
+                <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Actualizar Préstamo
                 </button>
                 <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">

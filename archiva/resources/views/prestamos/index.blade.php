@@ -15,10 +15,10 @@
                     <select name="user_id_solicitante_filter" id="user_id_solicitante_filter" class="form-select form-select-sm">
                         <option value="">Seleccione...</option>
                         @foreach ($usersForFilter as $id => $nombre)
-                            <option value="{{ $id }}"
-                                {{ request('user_id_solicitante_filter') == $id ? 'selected' : '' }}>
-                                {{ $nombre }}
-                            </option>
+                        <option value="{{ $id }}"
+                            {{ request('user_id_solicitante_filter') == $id ? 'selected' : '' }}>
+                            {{ $nombre }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -28,9 +28,9 @@
                     <select name="estado_filter" id="estado_filter" class="form-select form-select-sm">
                         <option value="">Seleccione...</option>
                         @foreach ($estadosPrestamo as $key => $estadoNombre)
-                            <option value="{{ $key }}" {{ request('estado_filter') == $key ? 'selected' : '' }}>
-                                {{ $estadoNombre }}
-                            </option>
+                        <option value="{{ $key }}" {{ request('estado_filter') == $key ? 'selected' : '' }}>
+                            {{ $estadoNombre }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -39,30 +39,30 @@
                     <label for="fecha_prestamo_inicio">F. Préstamo Desde</label>
                     <input type="date" name="fecha_prestamo_inicio" id="fecha_prestamo_inicio" class="form-control form-control-sm" value="{{ request('fecha_prestamo_inicio') }}" placeholder="F. Préstamo Desde">
                 </div>
-                 <div class="col-md-3">
+                <div class="col-md-3">
                     <label for="fecha_prestamo_fin">F. Préstamo Hasta</label>
                     <input type="date" name="fecha_prestamo_fin" id="fecha_prestamo_fin" class="form-control form-control-sm" value="{{ request('fecha_prestamo_fin') }}" placeholder="F. Préstamo Hasta">
                 </div>
             </div>
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
-                Filtros</a>
+                <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
+                    Filtros</a>
             </div>
         </form>
 
 
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         @endif
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         @endif
 
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -83,7 +83,6 @@
             <table class="table table-striped w-100">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Solicitante</th>
                         <th>Receptor</th>
                         <th>Fecha Préstamo</th>
@@ -91,56 +90,59 @@
                         <th>Fecha Devolución</th>
                         <th>Estado</th>
                         <th>Activo</th>
-                        <th style="width: 15%;">Acciones</th> 
+                        <th style="width: 15%;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($prestamos as $prestamo)
-                        <tr>
-                            <td>{{ $prestamo->id }}</td>
-                            <td>{{ $prestamo->solicitante->name ?? 'N/A' }}</td>
-                            <td>{{ $prestamo->receptor->name ?? 'N/A' }}</td>
-                            <td>{{ $prestamo->fecha_prestamo_formatted }}</td>
-                            <td>{{ $prestamo->fecha_vencimiento_formatted }}</td>
-                            <td>{{ $prestamo->fecha_devolucion_formatted }}</td>
-                            <td>
-                                
-                            </td>
-                            <td>
-                                @if ($prestamo->is_active)
-                                    <span class="badge rounded-pill bg-primary">Sí</span>
-                                @else
-                                    <span class="badge rounded-pill bg-secondary">No</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <a href="{{ route('prestamos.show', $prestamo) }}" class="btn btn-sm btn-info me-1" title="Ver">
-                                        <i class="fas fa-eye"></i> Ver
-                                    </a>
-                                    <a href="{{ route('prestamos.edit', $prestamo) }}" class="btn btn-sm btn-primary mr-2" title="Editar">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                    <form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST"
-                                        onsubmit="return confirm('¿Eliminar este prestamo?')" class="d-inline mb-0">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                            <i class="fas fa-trash-alt"></i> Eliminar
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $prestamo->solicitante->name ?? 'N/A' }}</td>
+                        <td>{{ $prestamo->receptor->name ?? 'N/A' }}</td>
+                        <td>{{ $prestamo->fecha_prestamo_formatted }}</td>
+                        <td>{{ $prestamo->fecha_vencimiento_formatted }}</td>
+                        <td>{{ $prestamo->fecha_devolucion_formatted }}</td>
+                        <td>
+                            @if ($prestamo->estado === 'devuelto')
+                            <span class="badge rounded-pill bg-success">devuelto</span>
+                            @elseif ($prestamo->estado === 'prestado')
+                            <span class="badge rounded-pill bg-warning">prestado</span>
+                            @elseif ($prestamo->estado === 'vencido')
+                            <span class="badge rounded-pill bg-danger">vencido</span>
+                            @endif
+                        </td>
+                        <td>
+                            <i
+                                class="fa {{ $prestamo->is_active ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' }}"></i>
+                            {{ $prestamo->is_active ? 'Activo' : 'Inactivo' }}
+                        </td>
+                        <td>
+                            <div class="d-flex">
+                                <a href="{{ route('prestamos.show', $prestamo) }}" class="btn btn-sm btn-info me-1" title="Ver">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                <a href="{{ route('prestamos.edit', $prestamo) }}" class="btn btn-sm btn-primary mr-2" title="Editar">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form action="{{ route('prestamos.destroy', $prestamo) }}" method="POST"
+                                    onsubmit="return confirm('¿Eliminar este prestamo?')" class="d-inline mb-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="9" class="text-center">No hay préstamos registrados que coincidan con los filtros.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="9" class="text-center">No hay préstamos registrados que coincidan con los filtros.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-         <div class="mt-3 d-flex justify-content-end">
+        <div class="mt-3 d-flex justify-content-end">
             {{ $prestamos->appends(request()->query())->links('pagination::bootstrap-4') }}
         </div>
     </div>

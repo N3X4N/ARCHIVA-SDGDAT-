@@ -15,10 +15,10 @@ use App\Http\Controllers\Admin\DependenciaController;
 use App\Http\Controllers\Admin\SerieController;
 use App\Http\Controllers\Admin\SubserieController;
 use App\Http\Controllers\Admin\UbicacionController;
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Inventarios\TipoDocumentalController;
 use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
 use App\Http\Controllers\Inventarios\SoporteController;
+
 
 
 Route::get('/', fn() => view('auth.login'));
@@ -73,6 +73,9 @@ Route::prefix('inventarios')
     ->group(function () {
         // Dependencias
         Route::resource('dependencias', DependenciaController::class);
+       
+        // Prestamos
+        Route::resource('prestamos', PrestamoController::class);
 
         // Transferencias
         Route::resource('transferencias', TransferenciaDocumentalController::class);

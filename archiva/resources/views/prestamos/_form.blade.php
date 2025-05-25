@@ -93,7 +93,7 @@
                 </div>
 
                 <div class="col-12 col-md-4">
-                    <label for="firma_solicitante" class="form-label"><strong>Firma Solicitante</strong> (Texto/Path)</label>
+                    <label for="firma_solicitante" class="form-label"><strong>Firma Solicitante</strong></label>
                     <textarea name="firma_solicitante" id="firma_solicitante" class="form-control @error('firma_solicitante') is-invalid @enderror" rows="2">{{ old('firma_solicitante', $currentPrestamo->firma_solicitante ?? '') }}</textarea>
                     @error('firma_solicitante')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="col-12 col-md-4">
-                    <label for="firma_receptor" class="form-label"><strong>Firma Receptor</strong> (Texto/Path)</label>
+                    <label for="firma_receptor" class="form-label"><strong>Firma Receptor</strong></label>
                     <textarea name="firma_receptor" id="firma_receptor" class="form-control @error('firma_receptor') is-invalid @enderror" rows="2">{{ old('firma_receptor', $currentPrestamo->firma_receptor ?? '') }}</textarea>
                     @error('firma_receptor')
                         <div class="invalid-feedback">{{ $message }}</div>

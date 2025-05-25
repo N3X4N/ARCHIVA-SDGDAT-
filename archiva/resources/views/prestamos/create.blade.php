@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="title">Crear Nuevo Préstamo</x-slot>
 
-    <div class="container-fluid"> {{-- O solo .container si prefieres ancho fijo --}}
+    <div class="container-fluid">
         <h1 class="mb-4">Crear Nuevo Préstamo</h1>
 
         @if ($errors->any())
