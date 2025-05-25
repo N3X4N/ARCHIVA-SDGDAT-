@@ -25,6 +25,12 @@ class SerieDocumental extends Model
     /**
      * Relación con subseries
      */
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
     public function subseries()
     {
         return $this->hasMany(SubserieDocumental::class, 'serie_documental_id');

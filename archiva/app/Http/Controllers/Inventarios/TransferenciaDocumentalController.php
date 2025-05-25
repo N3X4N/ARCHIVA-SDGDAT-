@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Inventarios;
 
 use App\Http\Controllers\Controller;
 use App\Models\TransferenciaDocumental;
-use App\Models\DetallesTransferenciaDocumental;
 use App\Models\Dependencia;
 use App\Models\SerieDocumental;
 use App\Models\SubserieDocumental;
@@ -12,36 +11,60 @@ use App\Models\Ubicacion;
 use App\Models\Soporte;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class TransferenciaDocumentalController extends Controller
 {
+    /**
+     * Listado de transferencias, con filtros opcionales y paginación.
+     */
     public function index(Request $request)
     {
-        // Cargamos transferencia + detalles + serie + subserie + dependencia
         $query = TransferenciaDocumental::with([
+            'entidadRemitente',
+            'entidadProductora',
+            'oficinaProductora',
             'detalles.serie',
             'detalles.subserie',
-            'dependencia',
+            'detalles.ubicacion',
+            'detalles.soporte',
         ]);
 
-        // …tus filtros existentes…
-        if ($request->filled('dependencia_id')) {
-            $query->where('dependencia_id', $request->dependencia_id);
-        }
-        if ($request->filled('estado_flujo')) {
-            $query->where('estado_flujo', $request->estado_flujo);
+        // Filtros simples…
+        foreach (
+            [
+                'entidad_remitente_id',
+                'entidad_productora_id',
+                'oficina_productora_id',
+                'estado_flujo'
+            ] as $field
+        ) {
+            if ($request->filled($field)) {
+                $query->where($field, $request->input($field));
+            }
         }
         if ($request->filled('fecha_inicio')) {
-            $query->where('registro_entrada', '>=', $request->fecha_inicio);
+            $query->whereDate('registro_entrada', '>=', $request->fecha_inicio);
         }
         if ($request->filled('fecha_fin')) {
-            $query->where('registro_entrada', '<=', $request->fecha_fin);
+            $query->whereDate('registro_entrada', '<=', $request->fecha_fin);
         }
 
-        $transferencias = $query->latest()->paginate(10);
+        $transferencias = $query
+            ->orderBy('id', 'asc')
+            ->paginate(10)
+            ->appends($request->only([
+                'entidad_remitente_id',
+                'entidad_productora_id',
+                'oficina_productora_id',
+                'estado_flujo',
+                'fecha_inicio',
+                'fecha_fin',
+            ]));
 
         $dependencias = Dependencia::active()->pluck('nombre', 'id');
-        $estados      = ['ELABORADO' => 'Elaborado', 'ARCHIVADO' => 'Archivado'];
+        $estados      = TransferenciaDocumental::ESTADOS;
 
         return view('inventarios.transferencias.index', compact(
             'transferencias',
@@ -50,160 +73,364 @@ class TransferenciaDocumentalController extends Controller
         ));
     }
 
+    /**
+     * Formulario para crear nueva transferencia.
+     */
     public function create()
-{
-    $nextTransferNumber = (int) (TransferenciaDocumental::max('numero_transferencia') ?? 0) + 1;
+    {
+        $dependencias        = Dependencia::active()->pluck('nombre', 'id');
+        $dependenciasCodigos = Dependencia::active()->pluck('codigo', 'id')->toArray();
 
-    // Para los selects
-    $dependencias           = Dependencia::active()->pluck('nombre', 'id');
-    $entidadesProductoras   = Dependencia::active()->pluck('nombre', 'id'); // o ajusta si vienen de otro modelo
-    $oficinasProductoras    = Dependencia::active()->pluck('nombre', 'id'); // idem
-    $ubicaciones            = Ubicacion::active()->pluck('estante', 'id');
+        return view('inventarios.transferencias.create', [
+            'dependencias'         => $dependencias,
+            'dependenciasCodigos'  => $dependenciasCodigos,
+            'entidadesProductoras' => $dependencias,
+            'oficinasProductoras'  => $dependencias,
+            'ubicaciones'          => Ubicacion::active()
+                ->get()
+                ->mapWithKeys(fn($u) => [
+                    $u->id => "Estante: {$u->estante} | Bandeja: {$u->bandeja} | Caja: {$u->caja} | Carpeta: {$u->carpeta} | Otro: {$u->otro}"
+                ])
+                ->toArray(),
+            'seriesList'           => SerieDocumental::active()->pluck('nombre', 'id'),
+            'seriesCodes'          => SerieDocumental::active()->pluck('codigo', 'id')->toArray(),
+            'subseriesGroup'       => SubserieDocumental::active()
+                ->get()
+                ->groupBy('serie_documental_id')
+                ->map->pluck('nombre', 'id')
+                ->toArray(),
+            'subseriesCodes'       => SubserieDocumental::active()->pluck('codigo', 'id')->toArray(),
+            'soportes'             => Soporte::active()->pluck('nombre', 'id'),
+        ]);
+    }
 
-    // Series / subseries...
-    $seriesList    = SerieDocumental::where('is_active', true)->pluck('nombre', 'id');
-    $seriesCodes   = SerieDocumental::where('is_active', true)->pluck('codigo', 'id')->toArray();
-    $subseriesGroup = SubserieDocumental::where('is_active', true)
-        ->get()
-        ->groupBy('serie_documental_id')
-        ->map(fn($col) => $col->pluck('nombre','id')->toArray())
-        ->toArray();
-    $subseriesCodes = SubserieDocumental::where('is_active', true)
-        ->pluck('codigo', 'id')
-        ->toArray();
-
-    return view('inventarios.transferencias.create', compact(
-        'dependencias',
-        'entidadesProductoras',
-        'oficinasProductoras',
-        'ubicaciones',
-        'nextTransferNumber',
-        'seriesList',
-        'seriesCodes',
-        'subseriesGroup',
-        'subseriesCodes'
-    ));
-}
-
+    /**
+     * Valida y almacena la nueva transferencia con sus detalles.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'dependencia_id'        => 'required|exists:dependencias,id',
-            'ubicacion_id'          => 'required|exists:ubicaciones,id',
-            'entidad_productora'    => 'required|string',
-            'unidad_administrativa' => 'required|string',
-            'oficina_productora'    => 'required|string',
-            'numero_transferencia'  => 'required|string|unique:transferencias_documentales,numero_transferencia',
-            'objeto'                => 'nullable|string',
+        // 1) Validación cabecera + arrays alineados
+        $v = $request->validate([
+            'entidad_remitente_id'      => 'required|exists:dependencias,id',
+            'entidad_productora_id'     => 'required|exists:dependencias,id',
+            'oficina_productora_id'     => 'required|exists:dependencias,id',
+            'unidad_administrativa'     => 'required|string',
+            'objeto'                    => 'nullable|string',
 
-            // Detalles (arrays)
-            'numero_orden.*'            => 'required',
-            'nombre_series_subserie.*'  => 'required|string',
+            // Detalles como arrays
+            'numero_orden.*'            => 'required|string',
+            'serie_documental_id.*'     => 'required|exists:series_documentales,id',
+            'subserie_documental_id.*'  => 'nullable|exists:subseries_documentales,id',
+            'codigo.*'                  => 'nullable|string',
             'fecha_inicial.*'           => 'nullable|date',
             'fecha_final.*'             => 'nullable|date',
+            'caja.*'                    => 'nullable|integer',
+            'carpeta.*'                 => 'nullable|integer',
+            'resolucion.*'              => 'nullable|integer',
+            'tomo.*'                    => 'nullable|integer',
+            'numero_folios.*'           => 'nullable|integer',
+            'soporte_id.*'              => 'nullable|exists:soportes,id',
+            'ubicacion_id.*'            => 'nullable|exists:ubicaciones,id',
+            'frecuencia_consulta.*'     => 'nullable|string',
+            'observaciones.*'           => 'nullable|string',
+            'estado_flujo.*'            => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($request) {
+        // 2) Validación de rangos de fecha (igual que antes)
+        $this->validateDateRanges($v);
 
-            $transferencia = TransferenciaDocumental::create([
-                'user_id'              => auth()->id(),
-                'dependencia_id'       => $request->dependencia_id,
-                'ubicacion_id'         => $request->ubicacion_id,
-                'entidad_productora'   => $request->entidad_productora,
-                'unidad_administrativa' => $request->unidad_administrativa,
-                'oficina_productora'   => $request->oficina_productora,
-                'registro_entrada'     => now(),
-                'numero_transferencia' => $request->numero_transferencia,
-                'objeto'               => $request->objeto,
+        // 3) Transacción: crear cabecera + detalles
+        DB::transaction(function () use ($v, $request) {
+            $t = TransferenciaDocumental::create([
+                'user_id'               => auth()->id(),
+                'entidad_remitente_id'  => $v['entidad_remitente_id'],
+                'entidad_productora_id' => $v['entidad_productora_id'],
+                'oficina_productora_id' => $v['oficina_productora_id'],
+                'unidad_administrativa' => $v['unidad_administrativa'],
+                'registro_entrada'      => now(),
+                'objeto'                => $v['objeto'] ?? null,
             ]);
 
-            /* --- 2. detalles --- */
+            // asignar número automático
+            $t->update(['numero_transferencia' => $t->id]);
+
+            // recorro cada posición de numero_orden[]
             foreach ($request->input('numero_orden', []) as $i => $orden) {
-                $transferencia->detalles()->create([
-                    'ubicacion_id'           => $request->ubicacion_id,
+                $t->detalles()->create([
+                    'serie_documental_id'    => $request->serie_documental_id[$i],
+                    'subserie_documental_id' => $request->subserie_documental_id[$i] ?? null,
                     'numero_orden'           => $orden,
-                    'codigo'                 => $request->codigo[$i]                 ?? null,
+                    'codigo'                 => $request->codigo[$i]               ?? null,
                     'nombre_series_subserie' => $request->nombre_series_subserie[$i] ?? null,
-                    'fecha_inicial'          => $request->fecha_inicial[$i]          ?? null,
-                    'fecha_final'            => $request->fecha_final[$i]            ?? null,
-                    'caja'                   => $request->caja[$i]                   ?? null,
-                    'carpeta'                => $request->carpeta[$i]                ?? null,
-                    'resolucion'             => $request->resolucion[$i]             ?? null,
-                    'tomo'                   => $request->tomo[$i]                   ?? null,
-                    'otro'                   => $request->otro[$i]                   ?? null,
-                    'numero_folios'          => $request->numero_folios[$i]          ?? null,
-                    'soporte'                => $request->soporte[$i]                ?? null,
-                    'frecuencia_consulta'    => $request->frecuencia_consulta[$i]    ?? null,
-                    'ubicacion_caja'         => $request->ubicacion_caja[$i]         ?? null,
-                    'ubicacion_bandeja'      => $request->ubicacion_bandeja[$i]      ?? null,
-                    'ubicacion_estante'      => $request->ubicacion_estante[$i]      ?? null,
-                    'observaciones'          => $request->observaciones[$i]          ?? null,
+                    'fecha_inicial'          => $request->fecha_inicial[$i]         ?? null,
+                    'fecha_final'            => $request->fecha_final[$i]           ?? null,
+                    'caja'                   => $request->caja[$i]                  ?? null,
+                    'carpeta'                => $request->carpeta[$i]               ?? null,
+                    'resolucion'             => $request->resolucion[$i]            ?? null,
+                    'tomo'                   => $request->tomo[$i]                  ?? null,
+                    'numero_folios'          => $request->numero_folios[$i]         ?? null,
+                    'soporte_id'             => $request->soporte_id[$i]            ?? null,
+                    'ubicacion_id'           => $request->ubicacion_id[$i]          ?? null,
+                    'frecuencia_consulta'    => $request->frecuencia_consulta[$i]   ?? null,
+                    'observaciones'          => $request->observaciones[$i]         ?? null,
+                    'estado_flujo'           => $request->estado_flujo[$i]          ?? 'Activo',
                 ]);
             }
         });
 
         return redirect()
             ->route('inventarios.transferencias.index')
-            ->with('success', 'Transferencia creada con sus detalles');
+            ->with('success', 'Transferencia creada con éxito');
     }
 
-    /* ===== ACTUALIZAR CABECERA (sin detalles) ===== */
-    public function update(Request $request, TransferenciaDocumental $transferencia)
+    /**
+     * Valida que las fechas finales sean posteriores o iguales a las iniciales
+     */
+    private function validateDateRanges(array $data)
     {
-        $request->validate([
-            'dependencia_id'        => 'required|exists:dependencias,id',
-            'ubicacion_id'          => 'required|exists:ubicaciones,id',
-            'entidad_productora'    => 'required',
-            'unidad_administrativa' => 'required',
-            'oficina_productora'    => 'required',
-            'objeto'                => 'nullable|string',
-        ]);
-
-        $transferencia->update($request->only([
-            'dependencia_id',
-            'ubicacion_id',
-            'entidad_productora',
-            'unidad_administrativa',
-            'oficina_productora',
-            'objeto',
-        ]));
-
-        return back()->with('success', 'Transferencia actualizada');
+        if (empty($data['fecha_inicial']) || empty($data['fecha_final'])) {
+            return;
+        }
+        foreach ($data['fecha_inicial'] as $i => $ini) {
+            if ($ini && !empty($data['fecha_final'][$i])) {
+                $start = \Carbon\Carbon::parse($ini);
+                $end   = \Carbon\Carbon::parse($data['fecha_final'][$i]);
+                if ($end->lt($start)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "fecha_final.{$i}" => "La fecha final debe ser igual o posterior a la inicial en fila " . ($i + 1)
+                    ]);
+                }
+            }
+        }
     }
 
+    /**
+     * Formulario para editar una transferencia existente.
+     */
     public function edit(TransferenciaDocumental $transferencia)
     {
-        $transferencia->load(['detalles.serie', 'detalles.subserie']);
+        // 1) Número siguiente (igual que en create)
+        $nextTransferNumber  = (int)(TransferenciaDocumental::max('numero_transferencia') ?? 0) + 1;
 
-        $seriesList   = SerieDocumental::where('is_active', true)->pluck('nombre', 'id');
-        $seriesCodes  = SerieDocumental::where('is_active', true)->pluck('codigo', 'id')->toArray();
+        // 2) Dependencias y códigos
+        $dependencias        = Dependencia::active()->pluck('nombre', 'id');
+        $dependenciasCodigos = Dependencia::active()->pluck('codigo', 'id')->toArray();
 
-        $subseriesList  = SubserieDocumental::where('is_active', true)
+        // 3) Reuso listas idénticas a create()
+        $entidadesProductoras = $dependencias;
+        $oficinasProductoras  = $dependencias;
+        $ubicaciones = Ubicacion::active()
+            ->get()
+            ->mapWithKeys(fn($u) => [
+                $u->id => sprintf(
+                    'Estante: %s | Bandeja: %s | Caja: %s | Carpeta: %s | Otro: %s',
+                    $u->estante,
+                    $u->bandeja,
+                    $u->caja,
+                    $u->carpeta,
+                    $u->otro
+                )
+            ])->toArray();
+        $seriesList      = SerieDocumental::active()->pluck('nombre', 'id');
+        $seriesCodes     = SerieDocumental::active()->pluck('codigo', 'id')->toArray();
+        $subseriesGroup  = SubserieDocumental::active()
             ->get()
             ->groupBy('serie_documental_id')
-            ->map(fn($col) => $col->pluck('nombre', 'id')->toArray())
+            ->map->pluck('nombre', 'id')
             ->toArray();
-        $subseriesCodes = SubserieDocumental::where('is_active', true)
-            ->pluck('codigo', 'id')
-            ->toArray();
+        $subseriesCodes  = SubserieDocumental::active()->pluck('codigo', 'id')->toArray();
+        $soportes        = Soporte::active()->pluck('nombre', 'id');
 
-        return view('inventarios.transferencias.edit', compact(
-            'transferencia',
-            'dependencias',
-            'ubicaciones',
-            'nextTransferNumber',
-            'seriesList',
-            'seriesCodes',
-            'subseriesList',
-            'subseriesCodes'
-        ));
+        // 4) Carga detalles para poblar las filas existentes
+        $transferencia->load('detalles');
+
+        // 5) Devuelve la vista con el mismo array de keys que create()
+        return view('inventarios.transferencias.edit', [
+            'transferencia'        => $transferencia,
+            'nextTransferNumber'   => $nextTransferNumber,
+            'dependencias'         => $dependencias,
+            'dependenciasCodigos'  => $dependenciasCodigos,
+            'entidadesProductoras' => $entidadesProductoras,
+            'oficinasProductoras'  => $oficinasProductoras,
+            'ubicaciones'          => $ubicaciones,
+            'seriesList'           => $seriesList,
+            'seriesCodes'          => $seriesCodes,
+            'subseriesGroup'       => $subseriesGroup,
+            'subseriesCodes'       => $subseriesCodes,
+            'soportes'             => $soportes,
+        ]);
+    }
+    /**
+     * Valida y actualiza la transferencia y sus detalles.
+     */
+    public function update(Request $request, TransferenciaDocumental $transferencia)
+    {
+        // 1) Validación cabecera + arrays alineados (igual que en store)
+        $v = $request->validate([
+            'entidad_remitente_id'      => 'required|exists:dependencias,id',
+            'entidad_productora_id'     => 'required|exists:dependencias,id',
+            'oficina_productora_id'     => 'required|exists:dependencias,id',
+            'unidad_administrativa'     => 'required|string',
+            'objeto'                    => 'nullable|string',
+
+            // Detalles como arrays
+            'numero_orden.*'            => 'required|string',
+            'serie_documental_id.*'     => 'required|exists:series_documentales,id',
+            'subserie_documental_id.*'  => 'nullable|exists:subseries_documentales,id',
+            'codigo.*'                  => 'nullable|string',
+            'fecha_inicial.*'           => 'nullable|date',
+            'fecha_final.*'             => 'nullable|date',
+            'caja.*'                    => 'nullable|integer',
+            'carpeta.*'                 => 'nullable|integer',
+            'resolucion.*'              => 'nullable|integer',
+            'tomo.*'                    => 'nullable|integer',
+            'numero_folios.*'           => 'nullable|integer',
+            'soporte_id.*'              => 'nullable|exists:soportes,id',
+            'ubicacion_id.*'            => 'nullable|exists:ubicaciones,id',
+            'frecuencia_consulta.*'     => 'nullable|string',
+            'observaciones.*'           => 'nullable|string',
+            'estado_flujo.*'            => 'nullable|string',
+            'detalle_id.*'              => 'nullable|exists:detalles_transferencias_documentales,id',
+        ]);
+
+        // 2) Validación personalizada de rangos
+        $this->validateDateRanges($v);
+
+        // 3) Transacción: actualizamos cabecera y sincronizamos detalles
+        DB::transaction(function () use ($v, $transferencia) {
+            // 3.1) Actualizar sólo los campos modificables de la cabecera
+            $transferencia->update([
+                'entidad_remitente_id'  => $v['entidad_remitente_id'],
+                'entidad_productora_id' => $v['entidad_productora_id'],
+                'oficina_productora_id' => $v['oficina_productora_id'],
+                'unidad_administrativa' => $v['unidad_administrativa'],
+                'objeto'                => $v['objeto'] ?? null,
+                // NO tocamos numero_transferencia
+            ]);
+
+            // 3.2) Código base para generar si falta
+            $depCode = Dependencia::findOrFail($v['entidad_remitente_id'])->codigo;
+            $series  = SerieDocumental::whereIn('id', $v['serie_documental_id'])->get()->keyBy('id');
+            $subseriesIds = array_filter($v['subserie_documental_id'], fn($id) => !is_null($id));
+            $subseries = SubserieDocumental::whereIn('id', $subseriesIds)->get()->keyBy('id');
+
+            // 3.3) Procesar cada detalle
+            $incoming = [];
+            foreach ($v['numero_orden'] as $i => $orden) {
+                $serieId = $v['serie_documental_id'][$i];
+                $subId   = $v['subserie_documental_id'][$i] ?? null;
+
+                // Datos comunes
+                $data = [
+                    'serie_documental_id'    => $serieId,
+                    'subserie_documental_id' => $subId,
+                    'numero_orden'           => $orden,
+                    'fecha_inicial'          => $v['fecha_inicial'][$i]   ?? null,
+                    'fecha_final'            => $v['fecha_final'][$i]     ?? null,
+                    'caja'                   => $v['caja'][$i]            ?? null,
+                    'carpeta'                => $v['carpeta'][$i]         ?? null,
+                    'resolucion'             => $v['resolucion'][$i]      ?? null,
+                    'tomo'                   => $v['tomo'][$i]            ?? null,
+                    'numero_folios'          => $v['numero_folios'][$i]   ?? null,
+                    'soporte_id'             => $v['soporte_id'][$i]      ?? null,
+                    'ubicacion_id'           => $v['ubicacion_id'][$i]    ?? null,
+                    'frecuencia_consulta'    => $v['frecuencia_consulta'][$i] ?? null,
+                    'observaciones'          => $v['observaciones'][$i]      ?? null,
+                    'estado_flujo'           => $v['estado_flujo'][$i]       ?? 'Activo',
+                ];
+
+                // Si no pusieron código, lo generamos
+                $serie    = $series[$serieId];
+                $subserie = $subId ? $subseries[$subId] : null;
+                $data['codigo'] = $v['codigo'][$i]
+                    ?? "{$depCode}.{$serie->codigo}." . ($subserie->codigo ?? '00');
+
+                // Actualizar o crear
+                if (!empty($v['detalle_id'][$i])) {
+                    $d = $transferencia->detalles()->findOrFail($v['detalle_id'][$i]);
+                    $d->update($data);
+                    $incoming[] = $d->id;
+                } else {
+                    $new = $transferencia->detalles()->create($data);
+                    $incoming[] = $new->id;
+                }
+            }
+
+            // 3.4) Borrar los detalles que el usuario quitó
+            $transferencia->detalles()
+                ->whereNotIn('id', $incoming)
+                ->delete();
+        });
+
+        return redirect()
+            ->route('inventarios.transferencias.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Transferencia actualizada correctamente');
+    }
+
+    /**
+     * Soft-delete de la transferencia y sus detalles.
+     */
+    public function destroy(TransferenciaDocumental $transferencia)
+    {
+        DB::transaction(function () use ($transferencia) {
+            // Soft-delete de detalles (marcará deleted_at)
+            $transferencia->detalles()->delete();
+            // Soft-delete de la cabecera
+            $transferencia->delete();
+        });
+
+        return redirect()
+            ->route('inventarios.transferencias.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Transferencia eliminada correctamente');
     }
 
 
-    /* ===== ELIMINAR (soft delete) ===== */
-    public function destroy(TransferenciaDocumental $transferencia)
+    /**
+     * Marca como ENTREGADO.
+     */
+    public function firmarEntregado(TransferenciaDocumental $t)
     {
-        $transferencia->delete();
-        return back()->with('success', 'Transferencia eliminada');
+        $t->update([
+            'estado_flujo'   => 'ENTREGADO',
+            'entregado_por'  => auth()->id(),
+            'entregado_fecha' => now(),
+        ]);
+
+        return back()
+            ->with('alertType',   'success')
+            ->with('alertMessage', 'Firmado como ENTREGADO.');
+    }
+
+    /**
+     * Marca como RECIBIDO.
+     */
+    public function firmarRecibido(TransferenciaDocumental $t)
+    {
+        $t->update([
+            'estado_flujo'   => 'RECIBIDO',
+            'recibido_por'   => auth()->id(),
+            'recibido_fecha' => now(),
+        ]);
+
+        return back()
+            ->with('alertType',   'success')
+            ->with('alertMessage', 'Firmado como RECIBIDO.');
+    }
+
+    /**
+     * Archiva la transferencia.
+     */
+    public function archivar(TransferenciaDocumental $t)
+    {
+        $t->update([
+            'estado_flujo' => 'ARCHIVADO',
+            'is_active'    => false,
+        ]);
+
+        return back()
+            ->with('alertType',   'success')
+            ->with('alertMessage', 'Transferencia archivada.');
     }
 }
