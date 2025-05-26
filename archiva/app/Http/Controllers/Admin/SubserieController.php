@@ -8,6 +8,7 @@ use App\Models\SerieDocumental;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\Dependencia;
+use Illuminate\Support\Facades\Log;
 
 class SubserieController extends Controller
 {
@@ -107,30 +108,37 @@ class SubserieController extends Controller
         ));
     }
 
-    public function update(Request $request, SerieDocumental $series, SubserieDocumental $subserie)
+    public function update(Request $request, SerieDocumental $series, SubserieDocumental $subseries)
     {
         $data = $request->validate([
-            'codigo'            => [
+            'codigo' => [
                 'required',
                 'string',
                 'max:10',
                 Rule::unique('subseries_documentales', 'codigo')
                     ->where('serie_documental_id', $series->id)
-                    ->ignore($subserie->id)
+                    ->ignore($subseries->id),
             ],
-            'nombre'            => ['required', 'string', 'max:150'],
-            'is_active'         => ['required', 'boolean'],
-            'dependencias_ids'  => ['required', 'array', 'min:1'],
+            'nombre' => [
+                'required',
+                'string',
+                'max:150',
+                Rule::unique('subseries_documentales', 'nombre')
+                    ->where('serie_documental_id', $series->id)
+                    ->ignore($subseries->id),
+            ],
+            'is_active' => ['required', 'boolean'],
+            'dependencias_ids' => ['required', 'array', 'min:1'],
             'dependencias_ids.*' => ['exists:dependencias,id'],
         ]);
 
-        $subserie->update([
+        $subseries->update([
             'codigo'    => $data['codigo'],
             'nombre'    => $data['nombre'],
             'is_active' => $data['is_active'],
         ]);
 
-        $subserie->dependencias()->sync($data['dependencias_ids']);
+        $subseries->dependencias()->sync($data['dependencias_ids']);
 
         return redirect()
             ->route('inventarios.series.subseries.index', $series)
@@ -138,16 +146,23 @@ class SubserieController extends Controller
             ->with('alertMessage', 'Subserie actualizada correctamente.');
     }
 
+
+
     /**
      * Eliminar subserie.
      */
-    public function destroy(SerieDocumental $series, SubserieDocumental $subserie)
+    public function destroy(SerieDocumental $series, SubserieDocumental $subseries)
     {
-        // (Opcional) limpiar la tabla pivote
-        $subserie->dependencias()->detach();
+        if ($subseries->detallesTransferencias()->exists()) {
+            return redirect()
+                ->route('inventarios.series.subseries.index', $series)
+                ->with('alertType', 'warning')
+                ->with('alertMessage', 'No se puede eliminar esta subserie porque está asociada a detalles de transferencia.');
+        }
 
-        // Soft-delete: marca deleted_at, no borra físicamente
-        $subserie->delete();
+        $subseries->dependencias()->detach();
+
+        $subseries->delete(); // soft delete → marca deleted_at
 
         return redirect()
             ->route('inventarios.series.subseries.index', $series)

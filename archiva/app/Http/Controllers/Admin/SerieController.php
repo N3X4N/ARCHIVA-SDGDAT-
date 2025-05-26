@@ -69,7 +69,7 @@ class SerieController extends Controller
     {
         $data = $request->validate([
             'serie_padre_id'           => ['nullable', 'exists:series_documentales,id'],
-            'codigo'                   => ['required','string','max:20'],
+            'codigo'                   => ['required', 'string', 'max:20'],
             'nombre'                   => ['required', 'string', 'max:150', 'unique:series_documentales,nombre'],
             'observaciones'            => ['nullable', 'string'],
             'is_active'                => ['required', 'boolean'],
@@ -136,7 +136,7 @@ class SerieController extends Controller
         // Actualiza todos los campos del modelo de una vez (no dará error unique si no cambian)
         $series->update([
             'serie_padre_id' => $data['serie_padre_id'] ?? null,
-            'codigo'         => ['required','string','max:20'],
+            'codigo'         => ['required', 'string', 'max:20'],
             'nombre'         => $data['nombre'],
             'observaciones'  => $data['observaciones']  ?? null,
             'is_active'      => $data['is_active'],
@@ -155,15 +155,23 @@ class SerieController extends Controller
      */
     public function destroy(SerieDocumental $series)
     {
-        // Si tiene subseries, no dejas borrar
+        // Bloqueo si tiene subseries activas
         if ($series->subseries()->exists()) {
             return redirect()
                 ->route('inventarios.series.index')
                 ->with('alertType', 'warning')
-                ->with('alertMessage', 'No puedes eliminar una serie que tiene subseries.');
+                ->with('alertMessage', 'No puedes eliminar una serie que tiene subseries asociadas.');
         }
 
-        // Soft‐delete: rellena deleted_at en lugar de eliminar físicamente
+        // Bloqueo si está en detalles de transferencias
+        if ($series->detallesTransferencias()->exists()) {
+            return redirect()
+                ->route('inventarios.series.index')
+                ->with('alertType', 'warning')
+                ->with('alertMessage', 'No puedes eliminar una serie que está asociada a detalles de transferencia.');
+        }
+
+        // Soft delete → marca deleted_at
         $series->delete();
 
         return redirect()
