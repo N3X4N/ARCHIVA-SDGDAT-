@@ -89,21 +89,26 @@ class DependenciaController extends Controller
     {
         $data = $request->validate([
             'nombre'    => [
-                'required','string','max:255',
-                Rule::unique('dependencias','nombre')
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('dependencias', 'nombre')
                     ->ignore($dependencia->id)
             ],
             'sigla'     => [
-                'required','alpha','max:3',
-                Rule::unique('dependencias','sigla')
+                'required',
+                'alpha',
+                'max:3',
+                Rule::unique('dependencias', 'sigla')
                     ->ignore($dependencia->id)
             ],
             'codigo'    => [
-                'required','regex:/^\d+$/',
-                Rule::unique('dependencias','codigo')
+                'required',
+                'regex:/^\d+$/',
+                Rule::unique('dependencias', 'codigo')
                     ->ignore($dependencia->id)
             ],
-            'is_active' => ['required','boolean'],
+            'is_active' => ['required', 'boolean'],
         ], [
             'nombre.unique' => 'Ese nombre ya está en uso por otra dependencia.',
             'sigla.unique'  => 'Esa sigla ya está en uso por otra dependencia.',
@@ -117,27 +122,28 @@ class DependenciaController extends Controller
 
         return redirect()
             ->route('inventarios.dependencias.index')
-            ->with('alertType','success')
-            ->with('alertMessage','Dependencia actualizada correctamente.');
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Dependencia actualizada correctamente.');
     }
 
 
     public function destroy(Dependencia $dependencia)
     {
-        $tieneTransf = $dependencia->transferencias()->exists();
-        $tieneUsers  = $dependencia->users()->exists();
+        // OJO: solo bloquea si también quieres impedir borrar con usuarios ligados
+        $tieneUsers = $dependencia->users()->exists();
 
-        if ($tieneTransf || $tieneUsers) {
+        if ($tieneUsers) {
             return redirect()
-                ->route('inventarios.dependencias.index')
+                ->route('admin.dependencias.index')
                 ->with('alertType', 'warning')
-                ->with('alertMessage', 'No se puede eliminar esta dependencia porque está asociada a transferencias o usuarios.');
+                ->with('alertMessage', 'No se puede eliminar esta dependencia porque está asociada a usuarios.');
         }
 
+        // Si llega aquí, elimina normalmente
         $dependencia->delete();
 
         return redirect()
-            ->route('inventarios.dependencias.index')
+            ->route('admin.dependencias.index')
             ->with('alertType', 'success')
             ->with('alertMessage', 'Dependencia eliminada correctamente.');
     }

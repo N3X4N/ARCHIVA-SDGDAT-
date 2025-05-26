@@ -59,14 +59,18 @@
 
         {{-- Pag y resumen --}}
         <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-            <small>
-                Mostrando {{ $series->firstItem() }} a {{ $series->lastItem() }}
-                de {{ $series->total() }} resultados
-            </small>
             <div>
-                {{ $series->links('pagination::bootstrap-5') }}
+                <small>
+                    Mostrando {{ $series->firstItem() }} a {{ $series->lastItem() }} de
+                    {{ $series->total() }} resultados
+                </small>
+            </div>
+            <div>
+                {{ $series->links('pagination::bootstrap-4') }}
             </div>
         </div>
+
+
 
         {{-- Tabla --}}
         <div class="table-responsive">
