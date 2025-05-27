@@ -3,22 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
-
-
-// Controladores “globales”
 use App\Http\Controllers\PrestamoController;
-
-// Controladores de Admin (créate estas clases bajo app/Http/Controllers/Admin)
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\DependenciaController;
 use App\Http\Controllers\Admin\SerieController;
 use App\Http\Controllers\Admin\SubserieController;
 use App\Http\Controllers\Admin\UbicacionController;
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Inventarios\TipoDocumentalController;
 use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
 use App\Http\Controllers\Inventarios\SoporteController;
+use App\Http\Controllers\PerfilController;
 
 
 Route::get('/', fn() => view('auth.login'));
@@ -45,6 +40,12 @@ Route::prefix('admin')
         Route::resource('transferencias', TransferenciaDocumentalController::class);
         // Ruta para configuración
     });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('perfil', [PerfilController::class, 'index'])->name('perfiles.index');
+    Route::get('perfil/edit', [PerfilController::class, 'edit'])->name('perfiles.edit');
+    Route::post('perfil/update', [PerfilController::class, 'update'])->name('perfiles.update');
+});
 
 // Rutas accesibles para cualquier usuario autenticado
 Route::middleware('auth')->group(function () {

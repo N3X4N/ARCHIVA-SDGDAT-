@@ -18,12 +18,10 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
         'password',
         'role_id',
         'is_active',
-        'dependencia_id',
     ];
 
     /**
@@ -50,6 +48,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(\App\Models\Role::class);
     }
 
+    public function perfil()
+    {
+        return $this->hasOne(\App\Models\Perfil::class);
+    }
 
     /**
      * Dependencia asignada al usuario (si aplica)
