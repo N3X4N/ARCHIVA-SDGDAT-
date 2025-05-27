@@ -5,117 +5,158 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Dependencia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    // Mostrar lista de usuarios
+    /**
+     * Lista usuarios con filtros por rol, estado, nombre y email.
+     */
     public function index(Request $request)
-{
-    $query = User::with('role');
-
-    // Filtro por nombre
-    if ($request->filled('name')) {
-        $query->where('name', 'like', '%' . $request->name . '%');
-    }
-
-    // Filtro por email
-    if ($request->filled('email')) {
-        $query->where('email', 'like', '%' . $request->email . '%');
-    }
-
-    // Filtro por rol
-    if ($request->filled('role')) {      // role = slug (admin/user) o ID; ajusta
-        $query->whereHas('role', function ($q) use ($request) {
-            $q->where('nombre_rol', $request->role);
-        });
-    }
-
-    // Filtro por estado
-    if ($request->has('is_active') && $request->is_active !== '') {
-        $query->where('is_active', $request->is_active);
-    }
-
-    $users = $query->paginate(15)->appends($request->query());   // mantiene filtros en links
-    return view('users.index', compact('users'));
-}
-
-    // Formulario para crear usuario
-    public function create()
     {
-        // Solo roles activos
+        // 0) Carga de dependencias para el filtro
+        $dependencias = Dependencia::where('is_active', true)
+            ->pluck('nombre', 'id');
+
+        // 1) Pluck de roles
         $roles = Role::where('is_active', true)
             ->pluck('nombre_rol', 'id');
-        return view('users.create', compact('roles'));
+
+        // 2) Query base y filtros...
+        $query = User::query();
+        if ($request->filled('role_id')) {
+            $query->where('role_id', $request->role_id);
+        }
+        if ($request->filled('dependencia_id')) {
+            $query->where('dependencia_id', $request->dependencia_id);
+        }
+        if ($request->filled('is_active')) {
+            $query->where('is_active', (bool) $request->is_active);
+        }
+        if ($request->filled('name')) {
+            $term = Str::lower(trim($request->name));
+            $query->whereRaw('LOWER(name) LIKE ?', ["%{$term}%"]);
+        }
+        if ($request->filled('email')) {
+            $term = Str::lower(trim($request->email));
+            $query->whereRaw('LOWER(email) LIKE ?', ["%{$term}%"]);
+        }
+
+        // 3) Paginación manteniendo filtros
+        $users = $query
+            ->paginate(50)
+            ->appends($request->only(['role_id', 'dependencia_id', 'is_active', 'name', 'email']));
+
+        // 4) Pasa todo a la vista
+        return view('users.index', compact('users', 'roles', 'dependencias'));
     }
 
-    // Almacenar nuevo usuario
+    /**
+     * Muestra formulario de creación.
+     */
+    public function create()
+    {
+        $roles        = Role::where('is_active', true)->pluck('nombre_rol', 'id');
+        $dependencias = Dependencia::where('is_active', true)->pluck('nombre', 'id');
+        return view('users.create', compact('roles', 'dependencias'));
+    }
+
+    /**
+     * Guarda nuevo usuario.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:120',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role_id'  => 'required|exists:roles,id',
-            'is_active' => 'sometimes|boolean',
+            'name'      => 'required|string|max:120',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|string|min:8|confirmed',
+            'role_id'   => 'required|exists:roles,id',
+            'dependencia_id' => 'nullable|exists:dependencias,id',
+            'is_active' => 'required|boolean',
         ]);
 
         $data['password']  = Hash::make($data['password']);
-        $data['is_active'] = $request->has('is_active');
-
+        // is_active llega como 0 o 1 gracias al hidden+checkbox en la vista
         User::create($data);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario creado correctamente.');
+        return redirect()
+            ->route('admin.users.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Usuario creado correctamente.');
     }
 
-    // Mostrar datos de un usuario
-    public function show(User $user)
-    {
-        return view('users.show', compact('user'));
-    }
-
-    // Formulario para editar usuario
+    /**
+     * Muestra formulario de edición.
+     */
     public function edit(User $user)
     {
+        // 1) Roles activos para el select
         $roles = Role::where('is_active', true)
             ->pluck('nombre_rol', 'id');
 
-        // Pasa tanto el modelo $user como los $roles a la vista
-        return view('users.edit', compact('user', 'roles'));
+        // 2) Dependencias activas para el select
+        $dependencias = Dependencia::where('is_active', true)
+            ->pluck('nombre', 'id');
+
+        // 3) Pasa todo a la vista
+        return view('users.edit', compact('user', 'roles', 'dependencias'));
     }
 
-    // Actualizar usuario
+    /**
+     * Actualiza usuario existente.
+     */
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
-            'name'     => 'required|string|max:120',
-            'email'    => "required|email|unique:users,email,{$user->id}",
-            'password' => 'nullable|string|min:8|confirmed',
-            'role_id'  => 'required|exists:roles,id',
-            'is_active' => 'sometimes|boolean',
+        $request->validate([
+            'name'      => 'required|string|max:120',
+            'email'     => "required|email|unique:users,email,{$user->id}",
+            'password'  => 'nullable|string|min:8|confirmed',
+            'role_id'   => 'required|exists:roles,id',
+            'dependencia_id' => 'nullable|exists:dependencias,id',
+            'is_active' => 'required|boolean',
         ]);
 
-        if ($data['password'] ?? null) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
-        }
+        $data = $request->all();
 
-        $data['is_active'] = $request->has('is_active');
+        // Si no cambió contraseña, la sacamos del array
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
+        }
 
         $user->update($data);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario actualizado correctamente.');
+        return redirect()
+            ->route('admin.users.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Usuario actualizado correctamente.');
     }
 
-    // Eliminar usuario (soft delete si está habilitado)
+    /**
+     * Elimina (soft delete) un usuario.
+     */
     public function destroy(User $user)
     {
+        $hasTransferencias = $user->transferencias()->exists();
+        //$hasPrestamos      = $user->prestamos()->exists();
+        $hasDependencia    = (bool) $user->dependencia; // si dependencia_id no es null
+
+        if ($hasTransferencias || $hasDependencia) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('alertType', 'warning')
+                ->with('alertMessage', 'No se puede eliminar este usuario porque está asociado a datos en el sistema.');
+        }
+
         $user->delete();
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario eliminado.');
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Usuario eliminado correctamente.');
     }
 }

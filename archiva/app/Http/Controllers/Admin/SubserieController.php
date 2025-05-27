@@ -4,83 +4,169 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SubserieDocumental;
+use App\Models\SerieDocumental;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Models\Dependencia;
+use Illuminate\Support\Facades\Log;
 
 class SubserieController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Listado de subseries de una serie concreta.
      */
-    public function index()
+    public function index(Request $request, SerieDocumental $series)
     {
-        //
+        $query = $series->subseries();
+
+        if ($request->filled('codigo')) {
+            $query->where('codigo', 'like', '%' . trim($request->codigo) . '%');
+        }
+        if ($request->filled('nombre')) {
+            $query->where('nombre', 'like', '%' . trim($request->nombre) . '%');
+        }
+        if ($request->filled('is_active')) {
+            $query->where('is_active', (bool)$request->is_active);
+        }
+
+        $subseries = $query
+            ->orderBy('codigo')
+            ->paginate(20)
+            ->appends($request->only(['codigo', 'nombre', 'is_active']));
+
+        return view('inventarios.series.subseries.index', compact('series', 'subseries'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Formulario de creación dentro de la serie.
      */
-    public function create()
+    public function create(SerieDocumental $series)
     {
-        //
+        $dependencias  = Dependencia::active()->pluck('nombre', 'id');
+        $seleccionadas = [];
+
+        return view('inventarios.series.subseries.create', compact(
+            'series',
+            'dependencias',
+            'seleccionadas'
+        ));
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Almacenar nueva subserie.
      */
-    public function store(Request $request)
+    public function store(Request $request, SerieDocumental $series)
     {
-        //
+        $data = $request->validate([
+            'codigo'            => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('subseries_documentales', 'codigo')
+                    ->where('serie_documental_id', $series->id)
+            ],
+            'nombre'           => [
+                'required',
+                'string',
+                'max:150',
+                Rule::unique('subseries_documentales', 'nombre')
+                    ->where('serie_documental_id', $series->id)
+            ],
+            'is_active'         => ['required', 'boolean'],
+            'dependencias_ids'  => ['required', 'array', 'min:1'],
+            'dependencias_ids.*' => ['exists:dependencias,id'],
+        ]);
+
+        $subserie = SubserieDocumental::create([
+            'serie_documental_id' => $series->id,
+            'codigo'              => $data['codigo'],
+            'nombre'              => $data['nombre'],
+            'is_active'           => $data['is_active'],
+        ]);
+
+        $subserie->dependencias()->sync($data['dependencias_ids']);
+
+        return redirect()
+            ->route('inventarios.series.subseries.index', $series)
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Subserie creada correctamente.');
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\SubserieDocumental  $subserieDocumental
-     * @return \Illuminate\Http\Response
+     * Formulario de edición.
      */
-    public function show(SubserieDocumental $subserieDocumental)
+    public function edit(SerieDocumental $series, SubserieDocumental $subseries)
     {
-        //
+        $dependencias  = Dependencia::active()->pluck('nombre', 'id');
+        $seleccionadas = $subseries->dependencias->pluck('id')->toArray();
+
+        return view('inventarios.series.subseries.edit', compact(
+            'series',
+            'subseries',
+            'dependencias',
+            'seleccionadas'
+        ));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\SubserieDocumental  $subserieDocumental
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(SubserieDocumental $subserieDocumental)
+    public function update(Request $request, SerieDocumental $series, SubserieDocumental $subseries)
     {
-        //
+        $data = $request->validate([
+            'codigo' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('subseries_documentales', 'codigo')
+                    ->where('serie_documental_id', $series->id)
+                    ->ignore($subseries->id),
+            ],
+            'nombre' => [
+                'required',
+                'string',
+                'max:150',
+                Rule::unique('subseries_documentales', 'nombre')
+                    ->where('serie_documental_id', $series->id)
+                    ->ignore($subseries->id),
+            ],
+            'is_active' => ['required', 'boolean'],
+            'dependencias_ids' => ['required', 'array', 'min:1'],
+            'dependencias_ids.*' => ['exists:dependencias,id'],
+        ]);
+
+        $subseries->update([
+            'codigo'    => $data['codigo'],
+            'nombre'    => $data['nombre'],
+            'is_active' => $data['is_active'],
+        ]);
+
+        $subseries->dependencias()->sync($data['dependencias_ids']);
+
+        return redirect()
+            ->route('inventarios.series.subseries.index', $series)
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Subserie actualizada correctamente.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SubserieDocumental  $subserieDocumental
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, SubserieDocumental $subserieDocumental)
-    {
-        //
-    }
+
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\SubserieDocumental  $subserieDocumental
-     * @return \Illuminate\Http\Response
+     * Eliminar subserie.
      */
-    public function destroy(SubserieDocumental $subserieDocumental)
+    public function destroy(SerieDocumental $series, SubserieDocumental $subseries)
     {
-        //
+        if ($subseries->detallesTransferencias()->exists()) {
+            return redirect()
+                ->route('inventarios.series.subseries.index', $series)
+                ->with('alertType', 'warning')
+                ->with('alertMessage', 'No se puede eliminar esta subserie porque está asociada a detalles de transferencia.');
+        }
+
+        $subseries->dependencias()->detach();
+
+        $subseries->delete(); // soft delete → marca deleted_at
+
+        return redirect()
+            ->route('inventarios.series.subseries.index', $series)
+            ->with('alertType', 'success')
+            ->with('alertMessage', 'Subserie eliminada correctamente.');
     }
 }

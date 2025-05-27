@@ -1,36 +1,24 @@
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const serieSelect = document.querySelector('select[name="serie_documental_id"]');
-            const subserieSelect = document.querySelector('select[name="subserie_documental_id"]');
-            const subserieActual = "{{ old('subserie_documental_id', $transferencia->subserie_documental_id) }}";
+<x-admin-layout>
+    <x-slot name="title">Editar Transferencia #{{ $transferencia->id }}</x-slot>
 
-            function cargarSubseries(serieId, selected = null) {
-                subserieSelect.innerHTML = '<option value="">Cargando...</option>';
+    <div class="container-fluid">
+        <h1>Editar Transferencia #{{ $transferencia->id }}</h1>
 
-                fetch(`/subseries-por-serie/${serieId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        let options = '<option value="">Seleccione...</option>';
-                        data.forEach(subserie => {
-                            const selectedAttr = (selected && selected == subserie.id) ? 'selected' :
-                            '';
-                            options +=
-                                `<option value="${subserie.id}" ${selectedAttr}>${subserie.nombre}</option>`;
-                        });
-                        subserieSelect.innerHTML = options;
-                    });
-            }
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <form method="POST" action="{{ route('inventarios.transferencias.update', $transferencia) }}">
+            @csrf
+            @method('PUT')
 
-            // Evento cuando cambia la serie
-            serieSelect.addEventListener('change', function() {
-                cargarSubseries(this.value);
-            });
+            @include('inventarios.transferencias._form')
 
-            // Al cargar por primera vez (modo edición)
-            if (serieSelect.value) {
-                cargarSubseries(serieSelect.value, subserieActual);
-            }
-        });
-    </script>
-@endpush
+        </form>
+    </div>
+</x-admin-layout>
