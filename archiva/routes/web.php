@@ -72,45 +72,56 @@ Route::prefix('inventarios')
     ->name('inventarios.')
     ->middleware(['auth', 'role:admin'])
     ->group(function () {
-        // Dependencias
+
+        //
+        // Catálogos maestros
+        //
         Route::resource('dependencias', DependenciaController::class);
-
-        // Transferencias
-        Route::resource('transferencias', TransferenciaDocumentalController::class);
-
-        Route::patch(
-            'transferencias/{t}/firmar-entregado',
-            [TransferenciaDocumentalController::class, 'firmarEntregado']
-        )
-            ->name('transferencias.firmar.entregado')
-            ->middleware('auth');
-
-        Route::patch(
-            'transferencias/{t}/firmar-recibido',
-            [TransferenciaDocumentalController::class, 'firmarRecibido']
-        )
-            ->name('transferencias.firmar.recibido')
-            ->middleware('auth');
-
-        Route::patch(
-            'transferencias/{t}/archivar',
-            [TransferenciaDocumentalController::class, 'archivar']
-        )
-            ->name('transferencias.archivar')
-            ->middleware('auth');
-
-        // Series + Subseries anidado
         Route::resource('series', SerieController::class);
         Route::resource('series.subseries', SubserieController::class);
-
-        // Tipos Documentales
         Route::resource('tipos-documentales', TipoDocumentalController::class)
             ->parameters(['tipos-documentales' => 'tipo_documental']);
-
         Route::resource('ubicaciones', UbicacionController::class)
             ->parameters(['ubicaciones' => 'ubicacion'])
             ->except(['show']);
-
         Route::resource('soportes', SoporteController::class)
             ->except(['show']);
+
+        //
+        // Exportar PDF de transferencias
+        //
+        // 1) Listado (filtrado o completo)
+        Route::get('transferencias/pdf_all', [
+            TransferenciaDocumentalController::class,
+            'downloadAllPdf'
+        ])->name('transferencias.pdf_all');
+
+        // 2) Individual
+        Route::get('transferencias/{transferencia}/pdf', [
+            TransferenciaDocumentalController::class,
+            'downloadPdf'
+        ])->name('transferencias.pdf');
+
+        //
+        // CRUD Transferencias
+        //
+        Route::resource('transferencias', TransferenciaDocumentalController::class);
+
+        //
+        // Firmar y archivar
+        //
+        Route::patch('transferencias/{transferencia}/firmar-entregado', [
+            TransferenciaDocumentalController::class,
+            'firmarEntregado'
+        ])->name('transferencias.firmar.entregado');
+
+        Route::patch('transferencias/{transferencia}/firmar-recibido', [
+            TransferenciaDocumentalController::class,
+            'firmarRecibido'
+        ])->name('transferencias.firmar.recibido');
+
+        Route::patch('transferencias/{transferencia}/archivar', [
+            TransferenciaDocumentalController::class,
+            'archivar'
+        ])->name('transferencias.archivar');
     });
