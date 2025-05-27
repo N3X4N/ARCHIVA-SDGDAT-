@@ -11,8 +11,7 @@ use App\Models\Ubicacion;
 use App\Models\Soporte;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransferenciaDocumentalController extends Controller
 {
@@ -118,6 +117,7 @@ class TransferenciaDocumentalController extends Controller
             'objeto'                    => 'nullable|string',
 
             // Detalles como arrays
+            'numero_orden'              => 'required|array|min:1|max:10',
             'numero_orden.*'            => 'required|string',
             'serie_documental_id.*'     => 'required|exists:series_documentales,id',
             'subserie_documental_id.*'  => 'nullable|exists:subseries_documentales,id',
@@ -134,6 +134,8 @@ class TransferenciaDocumentalController extends Controller
             'frecuencia_consulta.*'     => 'nullable|string',
             'observaciones.*'           => 'nullable|string',
             'estado_flujo.*'            => 'nullable|string',
+        ], [
+            'numero_orden.max' => 'No puede haber más de 10 líneas de detalle.',
         ]);
 
         // 2) Validación de rangos de fecha (igual que antes)
@@ -149,6 +151,8 @@ class TransferenciaDocumentalController extends Controller
                 'unidad_administrativa' => $v['unidad_administrativa'],
                 'registro_entrada'      => now(),
                 'objeto'                => $v['objeto'] ?? null,
+                'elaborado_por'   => auth()->id(),
+                'elaborado_fecha' => now(),
             ]);
 
             // asignar número automático
@@ -274,6 +278,7 @@ class TransferenciaDocumentalController extends Controller
             'objeto'                    => 'nullable|string',
 
             // Detalles como arrays
+            'numero_orden'              => 'required|array|min:1|max:10',
             'numero_orden.*'            => 'required|string',
             'serie_documental_id.*'     => 'required|exists:series_documentales,id',
             'subserie_documental_id.*'  => 'nullable|exists:subseries_documentales,id',
@@ -291,6 +296,9 @@ class TransferenciaDocumentalController extends Controller
             'observaciones.*'           => 'nullable|string',
             'estado_flujo.*'            => 'nullable|string',
             'detalle_id.*'              => 'nullable|exists:detalles_transferencias_documentales,id',
+        ], [
+            'numero_orden.max' => 'No puede haber más de 10 líneas de detalle.',
+            'serie_documental_id.max' => 'No puede haber más de 10 líneas de detalle.',
         ]);
 
         // 2) Validación personalizada de rangos
@@ -368,6 +376,33 @@ class TransferenciaDocumentalController extends Controller
             ->with('alertMessage', 'Transferencia actualizada correctamente');
     }
 
+    // app/Http/Controllers/Inventarios/TransferenciaDocumentalController.php
+
+    /**
+     * Muestra una transferencia en detalle.
+     */
+    public function show(TransferenciaDocumental $transferencia)
+    {
+        // Cargo de una sola vez todas las relaciones que voy a necesitar
+        $transferencia->load([
+            'entidadRemitente',
+            'entidadProductora',
+            'oficinaProductora',
+            'detalles.serie',
+            'detalles.subserie',
+            'detalles.ubicacion',
+            'detalles.soporte',
+            'elaboradoBy.perfil.dependencia',
+            'entregadoBy.perfil.dependencia',
+            'recibidoBy.perfil.dependencia',
+        ]);
+
+        // Y lo paso a la vista show
+        return view('inventarios.transferencias.show', compact('transferencia'));
+    }
+
+
+
     /**
      * Soft-delete de la transferencia y sus detalles.
      */
@@ -432,5 +467,72 @@ class TransferenciaDocumentalController extends Controller
         return back()
             ->with('alertType',   'success')
             ->with('alertMessage', 'Transferencia archivada.');
+    }
+
+    /**
+     * Descarga un PDF con la transferencia y todos sus detalles.
+     */
+    public function downloadPdf(TransferenciaDocumental $transferencia)
+    {
+        $transferencia->load([
+            'entidadRemitente',
+            'entidadProductora',
+            'oficinaProductora',
+            'detalles.serie',
+            'detalles.subserie',
+            'detalles.ubicacion',
+            'detalles.soporte',
+
+            // Esto evita consultas N+1 en la vista de firmas:
+            'elaboradoBy.perfil.dependencia',
+            'entregadoBy.perfil.dependencia',
+            'recibidoBy.perfil.dependencia',
+        ]);
+
+        $pdf = PDF::loadView(
+            'inventarios.transferencias.pdf_single',
+            compact('transferencia')
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->stream("Transferencia_{$transferencia->numero_transferencia}.pdf");
+        // o ->download(...) si prefieres forzar la descarga
+    }
+
+    /**
+     * Descarga un PDF con todas las transferencias filtradas.
+     */
+    public function downloadAllPdf(Request $request)
+    {
+        // Recrea el query de index...
+        $query = TransferenciaDocumental::with([
+            'entidadRemitente',
+            'entidadProductora',
+            'oficinaProductora',
+            'detalles.serie',
+            'detalles.subserie',
+            'detalles.ubicacion',
+            'detalles.soporte'
+        ]);
+
+        foreach (['entidad_remitente_id', 'entidad_productora_id', 'oficina_productora_id', 'estado_flujo'] as $f) {
+            if ($request->filled($f)) {
+                $query->where($f, $request->input($f));
+            }
+        }
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('registro_entrada', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('registro_entrada', '<=', $request->fecha_fin);
+        }
+
+        $transferencias = $query->orderBy('id', 'asc')->get();
+
+        $pdf = PDF::loadView(
+            'inventarios.transferencias.pdf_all',
+            compact('transferencias')
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Listado_Transferencias_' . now()->format('Ymd_His') . '.pdf');
     }
 }
