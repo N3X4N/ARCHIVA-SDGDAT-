@@ -30,9 +30,11 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/perfil') }}">
-                            <i class="fa fa-user-circle me-1"></i> Perfil
+                        <a href="{{ route('perfiles.index') }}" class="btn btn-primary">
+                            <i class="fa fa-user-circle me-1"></i>
+                            {{ auth()->user()->perfil->nombres ?? auth()->user()->email }}
                         </a>
+
                     </li>
                     <li class="nav-item">
                         <form action="{{ route('logout') }}" method="POST">
@@ -47,7 +49,7 @@
         </div>
     </nav>
 
-   <div class="d-flex">
+    <div class="d-flex">
         <!-- Botón para colapsar/expandir sidebar -->
         <div class="position-fixed" style="z-index: 1040; left: 0.5rem; top: 4rem;">
             <button id="sidebarToggle" class="btn btn-outline-secondary">
@@ -57,7 +59,7 @@
 
         <!-- Sidebar modificado -->
         <nav id="sidebarMenu" class="sidebar bg-light border-end">
-            
+
             <div class="nav flex-column mt-5">
                 <a href="{{ url('/home') }}"
                     class="nav-link d-flex align-items-center p-3 {{ request()->is('home') ? 'active' : '' }}">
@@ -129,7 +131,7 @@
             </div>
         </nav>
 
-           <!-- Contenido Principal -->
+        <!-- Contenido Principal -->
         <main class="main-content">
             <div class="container-fluid mt-4">
                 {{ $slot }}
@@ -146,10 +148,10 @@
 
     <!-- Feather Icons (opcional) -->
     <script src="https://unpkg.com/feather-icons"></script>
-    
+
     <!-- js para el sidebar -->
     <script src="{{ asset('js/admin.js') }}"></script>
-    
+
 
 
     @stack('scripts')
