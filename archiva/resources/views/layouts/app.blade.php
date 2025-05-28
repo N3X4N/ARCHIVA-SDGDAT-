@@ -15,6 +15,8 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     <!-- Tus estilos / Vite (si importas Bootstrap ahí, comenta el CDN) -->
     {{-- @vite(['resources/sass/app.scss', 'resources/js/app.js']) --}}
     <!-- tu CSS/app.css o mix(...) aquí -->

@@ -9,6 +9,7 @@
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -68,19 +69,19 @@
                 </a>
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    <a href="{{ route('inventarios.transferencias.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/transferencias*') ? 'active' : '' }}">
-                        <i class="fas fa-archive me-3"></i>
-                        <span class="hide-on-collapse">Transferencias</span>
-                    </a>
+                <a href="{{ route('inventarios.transferencias.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/transferencias*') ? 'active' : '' }}">
+                    <i class="fas fa-archive me-3"></i>
+                    <span class="hide-on-collapse">Transferencias</span>
+                </a>
                 @endif
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    <a href="{{ route('inventarios.detalles_transferencias.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/detalles-transferencias*') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-list me-3"></i>
-                        <span class="hide-on-collapse">Inventario General</span>
-                    </a>
+                <a href="{{ route('inventarios.detalles_transferencias.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/detalles-transferencias*') ? 'active' : '' }}">
+                    <i class="fas fa-clipboard-list me-3"></i>
+                    <span class="hide-on-collapse">Inventario General</span>
+                </a>
                 @endif
 
 
@@ -91,61 +92,60 @@
                 </a>
 
                 @if (auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
-                    <a href="{{ route('admin.users.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('admin/users*') ? 'active' : '' }}">
-                        <i class="fas fa-users me-3"></i>
-                        <span class="hide-on-collapse">Usuarios</span>
-                    </a>
+                <a href="{{ route('admin.users.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('admin/users*') ? 'active' : '' }}">
+                    <i class="fas fa-users me-3"></i>
+                    <span class="hide-on-collapse">Usuarios</span>
+                </a>
                 @endif
 
-        @if(auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
-          <a
-            href="{{ route('admin.roles.index') }}"
-            class="nav-link d-flex align-items-center p-3 {{ request()->is('admin/roles*') ? 'active' : '' }}"
-          >
-            <i class="fa-solid fa-users-gear me-3"></i>
-            <span class="hide-on-collapse">Roles</span>
-          </a>
-        @endif
-
-                @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    <a href="{{ route('inventarios.dependencias.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/dependencias*') ? 'active' : '' }}">
-                        <i class="fas fa-building me-3"></i>
-                        <span class="hide-on-collapse">Dependencias</span>
-                    </a>
+                @if(auth()->user()->role && auth()->user()->role->nombre_rol == 'admin')
+                <a
+                    href="{{ route('admin.roles.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('admin/roles*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users-gear me-3"></i>
+                    <span class="hide-on-collapse">Roles</span>
+                </a>
                 @endif
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    <a href="{{ route('inventarios.ubicaciones.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/ubicaciones*') ? 'active' : '' }}">
-                        <i class="fas fa-map-marker-alt me-3"></i>
-                        <span class="hide-on-collapse">Ubicaciones</span>
-                    </a>
+                <a href="{{ route('inventarios.dependencias.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/dependencias*') ? 'active' : '' }}">
+                    <i class="fas fa-building me-3"></i>
+                    <span class="hide-on-collapse">Dependencias</span>
+                </a>
                 @endif
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    <a href="{{ route('inventarios.soportes.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/soportes*') ? 'active' : '' }}">
-                        <i class="fas fa-file-alt me-3"></i>
-                        <span class="hide-on-collapse">Soportes</span>
-                    </a>
+                <a href="{{ route('inventarios.ubicaciones.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/ubicaciones*') ? 'active' : '' }}">
+                    <i class="fas fa-map-marker-alt me-3"></i>
+                    <span class="hide-on-collapse">Ubicaciones</span>
+                </a>
+                @endif
+
+                @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
+                <a href="{{ route('inventarios.soportes.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/soportes*') ? 'active' : '' }}">
+                    <i class="fas fa-file-alt me-3"></i>
+                    <span class="hide-on-collapse">Soportes</span>
+                </a>
                 @endif
 
 
                 @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
-                    {{-- Link a Series Documentales --}}
-                    <a href="{{ route('inventarios.series.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->routeIs('inventarios.series.*') ? 'active' : '' }}">
-                        <i class="fas fa-layer-group me-3"></i>
-                        <span class="hide-on-collapse">Series Doc.</span>
-                    </a>
+                {{-- Link a Series Documentales --}}
+                <a href="{{ route('inventarios.series.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->routeIs('inventarios.series.*') ? 'active' : '' }}">
+                    <i class="fas fa-layer-group me-3"></i>
+                    <span class="hide-on-collapse">Series Doc.</span>
+                </a>
 
-                    <a href="{{ route('inventarios.tipos-documentales.index') }}"
-                        class="nav-link d-flex align-items-center p-3 {{ request()->routeIs('inventarios.tipos-documentales.*') ? 'active' : '' }}">
-                        <i class="fas fa-file-alt me-3"></i>
-                        <span class="hide-on-collapse">Tipos Documentales</span>
-                    </a>
+                <a href="{{ route('inventarios.tipos-documentales.index') }}"
+                    class="nav-link d-flex align-items-center p-3 {{ request()->routeIs('inventarios.tipos-documentales.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-alt me-3"></i>
+                    <span class="hide-on-collapse">Tipos Documentales</span>
+                </a>
                 @endif
             </div>
         </nav>
