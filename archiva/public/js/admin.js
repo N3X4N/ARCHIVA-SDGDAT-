@@ -25,29 +25,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-     //  función para cerrar al hacer clic fuera
+    // Función para cerrar al hacer clic fuera del sidebar
     document.addEventListener('click', function(event) {
         const sidebar = document.getElementById('sidebarMenu');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const isExpanded = !sidebar.classList.contains('collapsed');
         
-        // Elementos que no deben cerrar el sidebar
+        // Verificar si el clic fue dentro del sidebar o en el toggle
         const isClickInside = sidebar.contains(event.target) || 
                             sidebarToggle.contains(event.target);
         
-        if (!isClickInside && isExpanded && window.innerWidth > 768) {
+        // Verificar si el clic fue en un enlace del sidebar
+        const isNavLink = event.target.closest('.nav-link');
+        
+        // Solo cerrar si:
+        // 1. El clic NO fue dentro del sidebar
+        // 2. El clic NO fue en el toggle
+        // 3. El sidebar está expandido
+        // 4. La pantalla es mayor a 768px
+        // 5. NO es un enlace de navegación
+        if (!isClickInside && isExpanded && window.innerWidth > 768 && !isNavLink) {
             sidebar.classList.add('collapsed');
             mainContent.classList.add('collapsed');
             localStorage.setItem('sidebarCollapsed', true);
         }
     });
 
-    // maneja el responsive
+    // Maneja el responsive
     window.addEventListener('resize', function() {
         if (window.innerWidth <= 768) {
             sidebar.classList.add('collapsed');
             mainContent.classList.add('collapsed');
             localStorage.setItem('sidebarCollapsed', true);
+        }
+    });
+
+    // SOLUCIÓN ALTERNATIVA: Prevenir el cierre cuando se hace clic en enlaces del sidebar
+    sidebar.addEventListener('click', function(event) {
+        // Si el clic es en un enlace, prevenir que se propague al document
+        if (event.target.closest('.nav-link')) {
+            event.stopPropagation();
         }
     });
 });

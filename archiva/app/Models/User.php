@@ -76,4 +76,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(\App\Models\Prestamo::class, 'user_id');
     }
+
+    // Accesor para combinar nombres y apellidos
+    public function getFullNameAttribute(): string
+    {
+        if ($this->perfil) {
+            return trim("{$this->perfil->nombres} {$this->perfil->apellidos}");
+        }
+        return $this->email; // fallback
+    }
 }

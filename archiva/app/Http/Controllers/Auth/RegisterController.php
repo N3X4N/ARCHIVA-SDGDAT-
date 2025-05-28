@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Role;
+use App\Models\Perfil;
 
 class RegisterController extends Controller
 {
@@ -50,9 +51,10 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'nombres'             => ['required', 'string', 'max:255'],
+            'apellidos'           => ['required', 'string', 'max:255'],
+            'email'               => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password'            => ['required', 'string', 'min:8', 'confirmed'],
         ]);
     }
 
@@ -64,14 +66,27 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        $rolSolicitante = Role::where('nombre', 'solicitante')->first()->id;
+        // 1) Obtener el ID del rol "solicitante"
+        $rolSolicitante = Role::where('nombre_rol', 'solicitante')
+            ->firstOrFail()
+            ->id;
 
-        return User::create([
-            'name'      => $data['name'],
+        // 2) Crear el usuario
+        $user = User::create([
             'email'     => $data['email'],
             'password'  => Hash::make($data['password']),
-            'role_id'   => $rolSolicitante,      // ← añadido
+            'role_id'   => $rolSolicitante,
             'is_active' => true,
         ]);
+
+        // 3) Crear el perfil asociado
+        Perfil::create([
+            'user_id'   => $user->id,
+            'nombres'   => $data['nombres'],
+            'apellidos' => $data['apellidos'],
+            // 'dependencia_id' y 'firma_digital' quedan null por defecto
+        ]);
+
+        return $user;
     }
 }

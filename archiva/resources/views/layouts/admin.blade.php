@@ -75,7 +75,16 @@
                     </a>
                 @endif
 
-                <a href="{{ route('prestamos.index') }}"
+                @if (auth()->user()->role && in_array(auth()->user()->role->nombre_rol, ['admin', 'archivista']))
+                    <a href="{{ route('inventarios.detalles_transferencias.index') }}"
+                        class="nav-link d-flex align-items-center p-3 {{ request()->is('inventarios/detalles-transferencias*') ? 'active' : '' }}">
+                        <i class="fas fa-clipboard-list me-3"></i>
+                        <span class="hide-on-collapse">Inventario General</span>
+                    </a>
+                @endif
+
+
+                <a href="{{ route('inventarios.prestamos.index') }}"
                     class="nav-link d-flex align-items-center p-3 {{ request()->is('prestamos*') ? 'active' : '' }}">
                     <i class="fas fa-book me-3"></i>
                     <span class="hide-on-collapse">Préstamos</span>

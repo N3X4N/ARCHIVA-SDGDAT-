@@ -30,7 +30,8 @@
                     <select name="dependencia_id" id="dependencia_id" class="form-select">
                         <option value="">Todas</option>
                         @foreach ($dependencias as $id => $nombre)
-                            <option value="{{ $id }}" {{ request('dependencia_id') == $id ? 'selected' : '' }}>
+                            <option value="{{ $id }}"
+                                {{ request('dependencia_id') == $id ? 'selected' : '' }}>
                                 {{ $nombre }}
                             </option>
                         @endforeach
@@ -101,7 +102,13 @@
                 <tbody>
                     @forelse($users as $user)
                         <tr>
-                            <td>{{ $user->name }}</td>
+                            <td>
+                                @if ($user->perfil)
+                                    {{ $user->perfil->nombres }} {{ $user->perfil->apellidos }}
+                                @else
+                                    {{ $user->name }}
+                                @endif
+                            </td>
                             <td>{{ $user->dependencia->nombre ?? '—' }}</td>
                             <td>{{ $user->email }}</td>
                             <td>{{ optional($user->role)->nombre_rol ?? '—' }}</td>
