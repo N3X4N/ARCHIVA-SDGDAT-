@@ -124,8 +124,8 @@
                             <td>{{ $d->codigo }}</td>
                             <td>{{ optional($d->serie)->nombre }}</td>
                             <td>{{ optional($d->subserie)->nombre }}</td>
-                            <td>{{ $d->fecha_inicial?->format('d/m/Y') ?? '—' }}</td>
-                            <td>{{ $d->fecha_final?->format('d/m/Y') ?? '—' }}</td>
+                            <td>{{ $d->fecha_inicial}}</td>
+                            <td>{{ $d->fecha_final}}</td>
                             <td class="text-start">
                                 <small>
                                     <strong>Caja:</strong> {{ $d->caja }}<br>
