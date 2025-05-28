@@ -81,6 +81,14 @@
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
             <a href="{{ route('inventarios.transferencias.index') }}" class="btn btn-secondary mt-3">Limpiar
                 Filtros</a>
+
+            <div class="mt-3 mb-4">
+                <a href="{{ route('inventarios.transferencias.pdf_all', request()->query()) }}"
+                    class="btn btn-sm btn-outline-danger" target="_blank" rel="noopener">
+                    <i class="fas fa-file-pdf me-1"></i> Exportar Listado PDF
+                </a>
+
+            </div>
         </form>
 
         <br>
@@ -186,6 +194,14 @@
                         <td>
                             <!-- Buttons with icons properly aligned -->
                             <div class="d-flex">
+                                <!-- Botón PDF -->
+                                <a href="{{ route('inventarios.transferencias.pdf', $t) }}"
+                                    class="btn btn-sm btn-outline-danger me-2" title="Exportar PDF" target="_blank"
+                                    rel="noopener">
+                                    <i class="fas fa-file-pdf me-1"></i>PDF
+                                </a>
+
+
                                 <a href="{{ route('inventarios.transferencias.edit', $t) }}"
                                     class="btn btn-sm btn-primary mr-2">
                                     <i class="fas fa-edit"></i> Editar

@@ -28,7 +28,7 @@ Git: Para clonar el repositorio.
 ## Instalación
 1. Clonar el Repositorio
 Primero, clona el repositorio en tu máquina local:
-git clone https://github.com/tu-usuario/archiva.git
+git clone https://github.com/N3X4N/ARCHIVA-SDGDAT
 cd archiva
 2. Instalar Dependencias de PHP
 Instala las dependencias de PHP utilizando Composer:

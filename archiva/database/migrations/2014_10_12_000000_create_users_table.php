@@ -17,28 +17,22 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('role_id')
-                  ->constrained('roles')          // tabla roles
-                  ->cascadeOnUpdate()
-                  ->restrictOnDelete();
-            // Datos del usuario
-            $table->string('name');
+                ->constrained('roles') // tabla roles
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
 
-            // Estado y auditoría
             $table->boolean('is_active')->default(true);
-            $table->timestampsTz();      // created_at & updated_at con zona horaria
+
+            $table->timestampsTz();
             $table->softDeletesTz();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('users');
