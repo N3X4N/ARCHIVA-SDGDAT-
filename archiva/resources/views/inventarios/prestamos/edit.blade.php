@@ -6,9 +6,9 @@
 
         @if ($errors->any())
             <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $e)
+                        <li>{{ $e }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -17,9 +17,12 @@
         <form action="{{ route('prestamos.update', $prestamo) }}" method="POST">
             @csrf
             @method('PUT')
+
             @include('prestamos._form', [
                 'prestamo' => $prestamo,
-                'users' => $users
+                'users' => $users,
+                'usersFull' => $usersFull,
+                'detallesTransferencia' => $detallesTransferencia,
             ])
 
             <div class="mt-4">
@@ -27,7 +30,7 @@
                     <i class="fas fa-save"></i> Actualizar Préstamo
                 </button>
                 <a href="{{ route('prestamos.index') }}" class="btn btn-secondary">
-                     <i class="fas fa-times"></i> Cancelar
+                    <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>
         </form>

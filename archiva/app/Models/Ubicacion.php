@@ -27,6 +27,19 @@ class Ubicacion extends Model
         return $query->where('is_active', true);
     }
 
+    public function getNombreAttribute(): string
+    {
+        $parts = [
+            $this->estante,
+            $this->bandeja,
+            $this->caja !== null ? "Caja {$this->caja}" : null,
+            $this->carpeta !== null ? "Carpeta {$this->carpeta}" : null,
+            $this->otro,
+        ];
+        return collect($parts)
+            ->filter()
+            ->implode(' / ');
+    }
     /**
      * Relación uno a muchos con el detalle de transferencias.
      * Asume que en la tabla detalles_transferencia_documental

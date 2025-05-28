@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use App\Models\DetallePrestamo;
 
 class Prestamo extends Model
 {
@@ -20,8 +21,8 @@ class Prestamo extends Model
         'fecha_vencimiento',
         'fecha_devolucion',
         'estado',
-        'firma_solicitante', 
-        'firma_receptor',    
+        'firma_solicitante',
+        'firma_receptor',
         'observaciones',
         'is_active',
     ];
@@ -43,6 +44,12 @@ class Prestamo extends Model
     {
         return $this->belongsTo(User::class, 'user_id_receptor');
     }
+
+    public function detallesPrestamo()
+    {
+        return $this->hasMany(DetallePrestamo::class, 'prestamo_id');
+    }
+
 
     // --- Atributos Adicionales (Accessors) ---
     public function getFechaPrestamoFormattedAttribute()

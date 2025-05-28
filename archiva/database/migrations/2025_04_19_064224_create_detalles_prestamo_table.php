@@ -19,8 +19,9 @@ return new class extends Migration
                 ->constrained('prestamos')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
+            // Debe referenciar a la tabla de ítems transferidos
             $table->foreignId('transferencia_documental_id')
-                ->constrained('transferencias_documentales')
+                ->constrained('detalles_transferencias_documentales')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->foreignId('ubicacion_id')
@@ -33,6 +34,7 @@ return new class extends Migration
             $table->string('observaciones', 255)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestampsTz();
+            $table->softDeletesTz();
         });
     }
 

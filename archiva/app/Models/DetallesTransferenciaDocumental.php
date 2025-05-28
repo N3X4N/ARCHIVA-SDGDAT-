@@ -65,4 +65,12 @@ class DetallesTransferenciaDocumental extends Model
     {
         return $this->belongsTo(Soporte::class);
     }
+
+    public function detallesPrestamo()
+    {
+        return $this->hasMany(
+            DetallePrestamo::class,
+            'transferencia_documental_id'
+        );
+    }
 }

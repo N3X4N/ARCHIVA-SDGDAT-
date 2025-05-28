@@ -34,17 +34,25 @@
                                     <form action="{{ route('register') }}" method="POST">
                                         @csrf
                                         <p>Por favor, regístrate para crear una cuenta</p>
-
+                                        {{-- Nombres --}}
                                         <div class="form-outline mb-4">
-                                            <label class="form-label" for="name">Nombre</label>
-                                            <input type="text" name="name" id="name"
-                                                class="form-control @error('name') is-invalid @enderror"
-                                                placeholder="Nombre completo" value="{{ old('name') }}" required
-                                                autocomplete="name" autofocus />
-                                            @error('name')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
+                                            <label class="form-label" for="nombres">Nombres</label>
+                                            <input type="text" name="nombres" id="nombres"
+                                                class="form-control @error('nombres') is-invalid @enderror"
+                                                value="{{ old('nombres') }}" required autofocus />
+                                            @error('nombres')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Apellidos --}}
+                                        <div class="form-outline mb-4">
+                                            <label class="form-label" for="apellidos">Apellidos</label>
+                                            <input type="text" name="apellidos" id="apellidos"
+                                                class="form-control @error('apellidos') is-invalid @enderror"
+                                                value="{{ old('apellidos') }}" required />
+                                            @error('apellidos')
+                                                <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
                                             @enderror
                                         </div>
 
@@ -100,12 +108,13 @@
                                 <div class="text-white px-3 py-4 p-md-5 mx-md-4">
                                     <h4 class="mb-4">Alcaldía de Tabio</h4>
                                     p class="small mb-0">El sistema de gestión documental para la Alcaldía de Tábio es
-                                        una solución tecnológica diseñada para optimizar la administración de documentos
-                                        y trámites administrativos. Este sistema permite almacenar fisicamente control , estados y
-                                        gestionar eficientemente documentos oficiales, facilitando su
-                                        acceso y consulta de manera rápida y segura. Además, contribuye a la mejora en
-                                        la transparencia, la trazabilidad de los procesos y la reducción del uso de
-                                        papel, promoviendo la eficiencia y la sostenibilidad dentro de la institución.
+                                    una solución tecnológica diseñada para optimizar la administración de documentos
+                                    y trámites administrativos. Este sistema permite almacenar fisicamente control ,
+                                    estados y
+                                    gestionar eficientemente documentos oficiales, facilitando su
+                                    acceso y consulta de manera rápida y segura. Además, contribuye a la mejora en
+                                    la transparencia, la trazabilidad de los procesos y la reducción del uso de
+                                    papel, promoviendo la eficiencia y la sostenibilidad dentro de la institución.
                                     </p>
 
                                 </div>

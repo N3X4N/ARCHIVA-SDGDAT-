@@ -14,9 +14,11 @@ use App\Http\Controllers\Inventarios\TipoDocumentalController;
 use App\Http\Controllers\Inventarios\TransferenciaDocumentalController;
 use App\Http\Controllers\Inventarios\SoporteController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\Inventarios\DetallesTransferenciaController;
 // Password Reset
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Inventarios\DetalleTransferenciaController;
 
 Route::get('/', fn() => view('auth.login'));
 //php artisan serve --host=0.0.0.0 --port=8000
@@ -58,8 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('inventario', TransferenciaDocumentalController::class)  // Cambié TransferenciaController a TransferenciaDocumentalController
         ->except(['show', 'edit', 'update', 'destroy']); // según permisos
 
-    // Préstamos
-    Route::resource('prestamos', PrestamoController::class);
+
 });
 
 // Ruta para obtener subseries por serie
@@ -126,8 +127,33 @@ Route::prefix('inventarios')
             TransferenciaDocumentalController::class,
             'archivar'
         ])->name('transferencias.archivar');
-    });
 
+
+        Route::get('prestamos/seleccionar', [PrestamoController::class, 'seleccionar'])
+            ->name('prestamos.seleccionar');
+        // Préstamos
+        Route::resource('prestamos', PrestamoController::class);
+    });
+// Rutas para Detalles de Transferencia
+
+// en routes/web.php, dentro del grupo:
+Route::prefix('inventarios')
+    ->name('inventarios.')
+    ->middleware(['auth', 'role:admin'])
+    ->group(function () {
+        // ... tus recursos de series, subseries, soportes, transferencias, etc ...
+
+        // Módulo Inventario → Detalles de Transferencia
+        // Ahora:
+        Route::get('detalles-transferencias', [DetalleTransferenciaController::class, 'index'])
+            ->name('detalles_transferencias.index');
+
+        Route::get('detalles-transferencias/{detalle}', [DetalleTransferenciaController::class, 'show'])
+            ->name('detalles_transferencias.show');
+
+        Route::post('detalles-transferencias/prestar', [DetalleTransferenciaController::class, 'prestar'])
+            ->name('detalles_transferencias.prestar');
+    });
 
 
 // Password Reset
